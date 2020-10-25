@@ -8,15 +8,12 @@ import (
 	"math"
 
 	"gioui.org/f32"
-	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 )
 
 // Ellipse draws an ellipse at (x,y) with the provided width and height.
 func Ellipse(x, y, w, h float64) {
-	defer op.Push(gctx.ctx.Ops).Pop()
-
 	w *= 0.5
 	h *= 0.5
 
@@ -42,13 +39,12 @@ func Ellipse(x, y, w, h float64) {
 	path.Begin(gctx.ctx.Ops)
 	path.Move(p1)
 	path.Arc(f1, f2, 2*math.Pi)
-	path.End().Add(gctx.ctx.Ops)
 
-	r32 := gctx.rect()
-	clr := gctx.cfg.fill
-
-	paint.ColorOp{Color: rgba(clr)}.Add(gctx.ctx.Ops)
-	paint.PaintOp{Rect: r32}.Add(gctx.ctx.Ops)
+	var (
+		shape = path.End()
+		clr   = gctx.cfg.fill
+	)
+	paint.FillShape(gctx.ctx.Ops, shape, rgba(clr))
 }
 
 // Circle draws a circle at (x,y) with a diameter d.
@@ -100,19 +96,17 @@ func Triangle(x1, y1, x2, y2, x3, y3 float64) {
 }
 
 func poly(ps ...f32.Point) {
-	defer op.Push(gctx.ctx.Ops).Pop()
-
 	var path clip.Path
 	path.Begin(gctx.ctx.Ops)
 	path.Move(ps[0])
 	for _, p := range ps[1:] {
 		path.Line(p.Sub(path.Pos()))
 	}
-	path.End().Add(gctx.ctx.Ops)
 
-	r32 := gctx.rect()
-	clr := gctx.cfg.fill
+	var (
+		poly = path.End()
+		clr  = rgba(gctx.cfg.fill)
+	)
 
-	paint.ColorOp{Color: rgba(clr)}.Add(gctx.ctx.Ops)
-	paint.PaintOp{Rect: r32}.Add(gctx.ctx.Ops)
+	paint.FillShape(gctx.ctx.Ops, poly, clr)
 }
