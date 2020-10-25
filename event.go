@@ -16,5 +16,21 @@ var Event struct {
 			X float64
 			Y float64
 		}
+		Buttons Buttons
 	}
 }
+
+// Buttons is a set of mouse buttons.
+type Buttons uint8
+
+// Contain reports whether the set b contains
+// all of the buttons.
+func (b Buttons) Contain(buttons Buttons) bool {
+	return b&buttons == buttons
+}
+
+const (
+	ButtonLeft Buttons = 1 << iota
+	ButtonRight
+	ButtonMiddle
+)

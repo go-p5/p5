@@ -91,6 +91,7 @@ func (gctx *gcontext) run(setup, draw Func) error {
 				Event.Mouse.Position.X = float64(e.Position.X)
 				Event.Mouse.Position.Y = float64(e.Position.Y)
 			}
+			Event.Mouse.Buttons = Buttons(e.Buttons)
 
 		case system.FrameEvent:
 			gctx.draw(e, draw)

@@ -22,7 +22,9 @@ func setup() {
 func draw() {
 	switch {
 	case p5.Event.Mouse.Pressed:
-		p5.Fill(color.RGBA{R: 255, A: 255})
+		if p5.Event.Mouse.Buttons.Contain(p5.ButtonLeft) {
+			p5.Fill(color.RGBA{R: 255, A: 255})
+		}
 	default:
 		p5.Fill(color.Transparent)
 	}
