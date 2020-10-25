@@ -104,14 +104,9 @@ func poly(ps ...f32.Point) {
 
 	var path clip.Path
 	path.Begin(gctx.ctx.Ops)
-	for i, p := range ps {
-		switch i {
-		case 0:
-			path.Move(p)
-		default:
-			j := (i - 1) % len(ps)
-			path.Line(p.Sub(ps[j]))
-		}
+	path.Move(ps[0])
+	for _, p := range ps[1:] {
+		path.Line(p.Sub(path.Pos()))
 	}
 	path.End().Add(gctx.ctx.Ops)
 
