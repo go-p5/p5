@@ -22,4 +22,7 @@ func setup() {
 func draw() {
 	p5.Fill(color.RGBA{R: 255, A: 208})
 	p5.Ellipse(50, 50, 80, 80)
+
+	p5.Fill(color.RGBA{B: 255, A: 208})
+	p5.Quad(50, 50, 80, 50, 80, 120, 60, 120)
 }
