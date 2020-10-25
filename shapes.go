@@ -89,6 +89,16 @@ func Square(x, y, s float64) {
 	Rect(x, y, s, s)
 }
 
+// Triangle draws a triangle, connecting the 3 points (x1,y1), (x2,y2)
+// and (x3,y3) together.
+func Triangle(x1, y1, x2, y2, x3, y3 float64) {
+	poly(
+		pt32(x1, y1),
+		pt32(x2, y2),
+		pt32(x3, y3),
+	)
+}
+
 func poly(ps ...f32.Point) {
 	defer op.Push(gctx.ctx.Ops).Pop()
 
