@@ -198,3 +198,8 @@ func Circle(x, y, d float64) {
 func Arc(x, y, w, h float64, beg, end float64) {
 	panic("not implemented")
 }
+
+// Line draws a line between (x1,y1) and (x2,y2).
+func Line(x1, y1, x2, y2 float64) {
+	panic("not implemented")
+}
