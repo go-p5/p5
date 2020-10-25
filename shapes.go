@@ -68,7 +68,8 @@ func Line(x1, y1, x2, y2 float64) {
 	panic("not implemented")
 }
 
-// Quad draws a quadrilateral.
+// Quad draws a quadrilateral, connecting the 4 points (x1,y1),
+// (x2,y2), (x3,y3) and (x4,y4) together.
 func Quad(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 	defer op.Push(gctx.ctx.Ops).Pop()
 
@@ -93,4 +94,9 @@ func Quad(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 
 	paint.ColorOp{Color: rgba(clr)}.Add(gctx.ctx.Ops)
 	paint.PaintOp{Rect: r32}.Add(gctx.ctx.Ops)
+}
+
+// Rect draws a rectangle at (x,y) with width w and height h.
+func Rect(x, y, w, h float64) {
+	Quad(x, y, x+w, y, x+w, y+h, x, y+h)
 }

@@ -25,4 +25,7 @@ func draw() {
 
 	p5.Fill(color.RGBA{B: 255, A: 208})
 	p5.Quad(50, 50, 80, 50, 80, 120, 60, 120)
+
+	p5.Fill(color.RGBA{G: 255, A: 208})
+	p5.Rect(200, 200, 50, 100)
 }
