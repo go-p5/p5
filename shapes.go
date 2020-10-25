@@ -71,29 +71,12 @@ func Line(x1, y1, x2, y2 float64) {
 // Quad draws a quadrilateral, connecting the 4 points (x1,y1),
 // (x2,y2), (x3,y3) and (x4,y4) together.
 func Quad(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
-	defer op.Push(gctx.ctx.Ops).Pop()
-
-	var (
-		p1 = pt32(x1, y1)
-		p2 = pt32(x2, y2)
-		p3 = pt32(x3, y3)
-		p4 = pt32(x4, y4)
+	poly(
+		pt32(x1, y1),
+		pt32(x2, y2),
+		pt32(x3, y3),
+		pt32(x4, y4),
 	)
-
-	var path clip.Path
-	path.Begin(gctx.ctx.Ops)
-	path.Move(p1)
-	path.Line(p2.Sub(p1))
-	path.Line(p3.Sub(p2))
-	path.Line(p4.Sub(p3))
-	path.Line(p1.Sub(p4))
-	path.End().Add(gctx.ctx.Ops)
-
-	r32 := gctx.rect()
-	clr := gctx.cfg.fill
-
-	paint.ColorOp{Color: rgba(clr)}.Add(gctx.ctx.Ops)
-	paint.PaintOp{Rect: r32}.Add(gctx.ctx.Ops)
 }
 
 // Rect draws a rectangle at (x,y) with width w and height h.
@@ -104,4 +87,27 @@ func Rect(x, y, w, h float64) {
 // Square draws a square at (x,y) with size s.
 func Square(x, y, s float64) {
 	Rect(x, y, s, s)
+}
+
+func poly(ps ...f32.Point) {
+	defer op.Push(gctx.ctx.Ops).Pop()
+
+	var path clip.Path
+	path.Begin(gctx.ctx.Ops)
+	for i, p := range ps {
+		switch i {
+		case 0:
+			path.Move(p)
+		default:
+			j := (i - 1) % len(ps)
+			path.Line(p.Sub(ps[j]))
+		}
+	}
+	path.End().Add(gctx.ctx.Ops)
+
+	r32 := gctx.rect()
+	clr := gctx.cfg.fill
+
+	paint.ColorOp{Color: rgba(clr)}.Add(gctx.ctx.Ops)
+	paint.PaintOp{Rect: r32}.Add(gctx.ctx.Ops)
 }
