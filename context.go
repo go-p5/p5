@@ -187,6 +187,11 @@ func Ellipse(x, y, w, h float64) {
 
 }
 
+// Circle draws a circle at (x,y) with a diameter d.
+func Circle(x, y, d float64) {
+	Ellipse(x, y, d, d)
+}
+
 // Arc draws an ellipsoidal arc centered at (x,y), with the provided
 // width and height, and a path from the beg to end radians.
 // Positive angles denote a counter-clockwise path.
