@@ -100,3 +100,8 @@ func Quad(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 func Rect(x, y, w, h float64) {
 	Quad(x, y, x+w, y, x+w, y+h, x, y+h)
 }
+
+// Square draws a square at (x,y) with size s.
+func Square(x, y, s float64) {
+	Rect(x, y, s, s)
+}
