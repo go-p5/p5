@@ -60,7 +60,7 @@ func (gctx *gcontext) run(setup, draw Func) error {
 	))
 
 	go func() {
-		tck := time.NewTicker(10 * time.Millisecond)
+		tck := time.NewTicker(15 * time.Millisecond)
 		defer tck.Stop()
 		for range tck.C {
 			gctx.w.Invalidate()
@@ -75,7 +75,7 @@ func (gctx *gcontext) run(setup, draw Func) error {
 
 		case key.Event:
 			switch e.Name {
-			case "Q", key.NameEscape:
+			case key.NameEscape:
 				gctx.w.Invalidate()
 				gctx.w.Close()
 			}
