@@ -61,7 +61,12 @@ func Arc(x, y, w, h float64, beg, end float64) {
 
 // Line draws a line between (x1,y1) and (x2,y2).
 func Line(x1, y1, x2, y2 float64) {
-	panic("not implemented")
+	poly(
+		pt32(x1, y1),
+		pt32(x2, y2),
+		pt32(x2-1, y2),
+		pt32(x1-1, y1),
+	)
 }
 
 // Quad draws a quadrilateral, connecting the 4 points (x1,y1),
