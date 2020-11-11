@@ -27,9 +27,12 @@ type gcontext struct {
 		x, y int
 	}
 	cfg struct {
-		th   *material.Theme
-		bkg  color.Color
-		fill color.Color
+		th     *material.Theme
+		bkg    color.Color
+		fill   color.Color
+		stroke color.Color
+
+		linew float32
 	}
 
 	ctx layout.Context
@@ -41,6 +44,8 @@ func newContext(w, h int) *gcontext {
 	gctx.size.y = h
 	gctx.cfg.bkg = color.Transparent
 	gctx.cfg.fill = color.White
+	gctx.cfg.stroke = color.Black
+	gctx.cfg.linew = 2
 	gctx.ctx = layout.Context{
 		Ops: new(op.Ops),
 	}
@@ -103,10 +108,8 @@ func (gctx *gcontext) draw(e system.FrameEvent, draw Func) {
 	gctx.ctx = layout.NewContext(gctx.ctx.Ops, e)
 
 	ops := gctx.ctx.Ops
-	r32 := gctx.rect()
 	clr := rgba(gctx.cfg.bkg)
-	paint.ColorOp{Color: clr}.Add(ops)
-	paint.PaintOp{Rect: r32}.Add(ops)
+	paint.Fill(ops, clr)
 
 	draw()
 
@@ -145,4 +148,9 @@ func Background(c color.Color) {
 // Fill sets the color used to fill shapes.
 func Fill(c color.Color) {
 	gctx.cfg.fill = c
+}
+
+// Stroke sets the color used to stroke paths.
+func Stroke(c color.Color) {
+	gctx.cfg.stroke = c
 }

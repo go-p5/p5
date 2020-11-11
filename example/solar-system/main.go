@@ -198,7 +198,7 @@ func (p *NBody) draw() {
 			piy := tr(pi.Y, ymin, ymax)
 			pjx := tr(pj.X, xmin, xmax)
 			pjy := tr(pj.Y, ymin, ymax)
-			p5.Fill(p.c)
+			p5.Stroke(p.c)
 			p5.Line(pix, piy, pjx, pjy)
 		}
 	}
