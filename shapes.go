@@ -41,10 +41,10 @@ func Ellipse(x, y, w, h float64) {
 	path.Arc(f1, f2, 2*math.Pi)
 
 	var (
-		shape = path.End()
+		shape = path.Outline()
 		clr   = gctx.cfg.fill
 	)
-	paint.FillShape(gctx.ctx.Ops, shape, rgba(clr))
+	paint.FillShape(gctx.ctx.Ops, rgba(clr), shape)
 }
 
 // Circle draws a circle at (x,y) with a diameter d.
@@ -61,12 +61,18 @@ func Arc(x, y, w, h float64, beg, end float64) {
 
 // Line draws a line between (x1,y1) and (x2,y2).
 func Line(x1, y1, x2, y2 float64) {
-	poly(
-		pt32(x1, y1),
-		pt32(x2, y2),
-		pt32(x2-1, y2),
-		pt32(x1-1, y1),
+	var (
+		p1   = pt32(x1, y1)
+		p2   = pt32(x2, y2)
+		path clip.Path
 	)
+	path.Begin(gctx.ctx.Ops)
+	path.Move(p1)
+	path.Line(p2.Sub(path.Pos()))
+
+	line := path.Stroke(gctx.cfg.linew, clip.StrokeStyle{})
+
+	paint.FillShape(gctx.ctx.Ops, rgba(gctx.cfg.stroke), line)
 }
 
 // Quad draws a quadrilateral, connecting the 4 points (x1,y1),
@@ -109,9 +115,9 @@ func poly(ps ...f32.Point) {
 	}
 
 	var (
-		poly = path.End()
+		poly = path.Outline()
 		clr  = rgba(gctx.cfg.fill)
 	)
 
-	paint.FillShape(gctx.ctx.Ops, poly, clr)
+	paint.FillShape(gctx.ctx.Ops, clr, poly)
 }
