@@ -29,7 +29,6 @@ import (
 )
 
 const (
-	defaultDPI    = 120
 	defaultWidth  = 400
 	defaultHeight = 400
 
