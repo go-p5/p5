@@ -76,7 +76,38 @@ func (p *Proc) Arc(x, y, w, h float64, beg, end float64) {
 	if !p.doStroke() {
 		return
 	}
-	panic("not implemented")
+
+	var (
+		c   = p.pt(x, y)
+		a   = p.cfg.trX(w)
+		b   = p.cfg.trY(h)
+		foc = 0.0
+		f1  f32.Point
+		f2  f32.Point
+	)
+
+	switch {
+	case a >= b:
+		foc = math.Sqrt(a*a - b*b)
+		f1 = c.Add(p.pt(+foc, 0))
+		f2 = c.Add(p.pt(-foc, 0))
+	default:
+		foc = math.Sqrt(b*b - a*a)
+		f1 = c.Add(p.pt(0, +foc))
+		f2 = c.Add(p.pt(0, -foc))
+	}
+
+	var (
+		sin, cos = math.Sincos(beg)
+		p0       = p.pt(a*cos, b*sin).Add(c)
+		path     clip.Path
+	)
+	path.Begin(p.ctx.Ops)
+	path.Move(p0)
+	path.Arc(f1.Sub(p0), f2.Sub(p0), float32(end-beg))
+
+	arc := path.Stroke(p.cfg.linew, p.cfg.sty)
+	paint.FillShape(p.ctx.Ops, rgba(p.cfg.color.stroke), arc)
 }
 
 // Line draws a line between (x1,y1) and (x2,y2).
