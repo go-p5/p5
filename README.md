@@ -30,6 +30,7 @@ func setup() {
 }
 
 func draw() {
+	p5.StrokeWidth(2)
 	p5.Fill(color.RGBA{R: 255, A: 208})
 	p5.Ellipse(50, 50, 80, 80)
 
@@ -44,6 +45,10 @@ func draw() {
 
 	p5.TextSize(24)
 	p5.Text("Hello, World!", 10, 300)
+
+	p5.Stroke(color.Black)
+	p5.StrokeWidth(5)
+	p5.Arc(300, 100, 80, 20, 0, 1.5*math.Pi)
 }
 ```
 
