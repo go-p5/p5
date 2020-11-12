@@ -23,6 +23,7 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget/material"
 	"gonum.org/v1/gonum/spatial/r1"
@@ -39,6 +40,9 @@ var (
 	defaultBkgColor    = color.Transparent
 	defaultFillColor   = color.White
 	defaultStrokeColor = color.Black
+
+	defaultTextColor = color.Black
+	defaultTextSize  = float32(12)
 )
 
 // Proc is a p5 processor.
@@ -66,6 +70,11 @@ type Proc struct {
 			bkg    color.Color
 			fill   color.Color
 			stroke color.Color
+		}
+		text struct {
+			color color.Color
+			align text.Alignment
+			size  float32
 		}
 
 		th    *material.Theme
@@ -108,6 +117,10 @@ func (p *Proc) initCanvas(w, h int) {
 	p.cfg.color.bkg = defaultBkgColor
 	p.cfg.color.fill = defaultFillColor
 	p.cfg.color.stroke = defaultStrokeColor
+
+	p.cfg.text.color = defaultTextColor
+	p.cfg.text.align = text.Start
+	p.cfg.text.size = defaultTextSize
 }
 
 func (p *Proc) cnvSize() (w, h float64) {
@@ -227,4 +240,47 @@ func Stroke(c color.Color) {
 // Fill sets the color used to fill shapes.
 func Fill(c color.Color) {
 	proc.cfg.color.fill = c
+}
+
+// TextSize sets the text size.
+func TextSize(size float64) {
+	proc.TextSize(size)
+}
+
+// TextSize sets the text size.
+func (p *Proc) TextSize(size float64) {
+	p.cfg.text.size = float32(size)
+}
+
+// Text draws txt on the screen at (x,y).
+func Text(txt string, x, y float64) {
+	proc.Text(txt, x, y)
+}
+
+// Text draws txt on the screen at (x,y).
+func (p *Proc) Text(txt string, x, y float64) {
+	x = p.cfg.trX(x)
+	y = p.cfg.trY(y)
+
+	var (
+		offset = x
+		w, _   = p.cnvSize()
+		size   = p.cfg.text.size
+	)
+	switch p.cfg.text.align {
+	case text.End:
+		offset = x - w
+	case text.Middle:
+		offset = x - 0.5*w
+	}
+	defer op.Push(p.ctx.Ops).Pop()
+	op.Offset(f32.Point{
+		X: float32(offset),
+		Y: float32(y) - size,
+	}).Add(p.ctx.Ops) // shift to use baseline
+
+	l := material.Label(p.cfg.th, unit.Px(size), txt)
+	l.Color = rgba(p.cfg.text.color)
+	l.Alignment = p.cfg.text.align
+	l.Layout(p.ctx)
 }
