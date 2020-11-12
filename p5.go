@@ -4,26 +4,17 @@
 
 package p5 // import "github.com/go-p5/p5"
 
-import (
-	"log"
-	"os"
-
-	"gioui.org/app"
+var (
+	// proc is the global Proc instance used by the p5js-like API.
+	proc = newProc(defaultWidth, defaultHeight)
 )
-
-var gctx = newContext(400, 400)
 
 // Run executes the user functions setup and draw.
 // Run never exits.
 func Run(setup, draw Func) {
-	go func() {
-		err := gctx.run(setup, draw)
-		if err != nil {
-			log.Fatalf("%+v", err)
-		}
-		os.Exit(0)
-	}()
-	app.Main()
+	proc.Setup = setup
+	proc.Draw = draw
+	proc.Run()
 }
 
 // Func is the type of functions users provide to p5.

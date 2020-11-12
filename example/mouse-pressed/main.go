@@ -23,9 +23,11 @@ func draw() {
 	switch {
 	case p5.Event.Mouse.Pressed:
 		if p5.Event.Mouse.Buttons.Contain(p5.ButtonLeft) {
+			p5.Stroke(color.Black)
 			p5.Fill(color.RGBA{R: 255, A: 255})
 		}
 	default:
+		p5.Stroke(nil)
 		p5.Fill(color.Transparent)
 	}
 	p5.Ellipse(

@@ -37,7 +37,7 @@ func setup() {
 			i, balls,
 		)
 	}
-	//noStroke();
+	p5.Stroke(nil)
 	p5.Fill(color.RGBA{R: 255, A: 204})
 }
 
