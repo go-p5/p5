@@ -125,6 +125,7 @@ func (p *Proc) Quad(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 		p.pt(x2, y2),
 		p.pt(x3, y3),
 		p.pt(x4, y4),
+		p.pt(x1, y1),
 	)
 }
 
@@ -161,6 +162,7 @@ func (p *Proc) Triangle(x1, y1, x2, y2, x3, y3 float64) {
 		proc.pt(x1, y1),
 		proc.pt(x2, y2),
 		proc.pt(x3, y3),
+		proc.pt(x1, y1),
 	)
 }
 
