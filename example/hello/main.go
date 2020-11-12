@@ -28,4 +28,10 @@ func draw() {
 
 	p5.Fill(color.RGBA{G: 255, A: 208})
 	p5.Rect(200, 200, 50, 100)
+
+	p5.Fill(color.RGBA{G: 255, A: 208})
+	p5.Triangle(100, 100, 120, 120, 80, 120)
+
+	p5.TextSize(24)
+	p5.Text("Hello, World!", 10, 300)
 }
