@@ -13,13 +13,8 @@ import (
 )
 
 // Ellipse draws an ellipse at (x,y) with the provided width and height.
-func Ellipse(x, y, w, h float64) {
-	proc.Ellipse(x, y, w, h)
-}
-
-// Ellipse draws an ellipse at (x,y) with the provided width and height.
 func (p *Proc) Ellipse(x, y, w, h float64) {
-	if p.cfg.color.fill == nil && p.cfg.color.stroke == nil {
+	if !p.doFill() && !p.doStroke() {
 		return
 	}
 
@@ -70,11 +65,6 @@ func (p *Proc) Ellipse(x, y, w, h float64) {
 }
 
 // Circle draws a circle at (x,y) with a diameter d.
-func Circle(x, y, d float64) {
-	proc.Circle(x, y, d)
-}
-
-// Circle draws a circle at (x,y) with a diameter d.
 func (p *Proc) Circle(x, y, d float64) {
 	p.Ellipse(x, y, d, d)
 }
@@ -82,18 +72,16 @@ func (p *Proc) Circle(x, y, d float64) {
 // Arc draws an ellipsoidal arc centered at (x,y), with the provided
 // width and height, and a path from the beg to end radians.
 // Positive angles denote a counter-clockwise path.
-func Arc(x, y, w, h float64, beg, end float64) {
+func (p *Proc) Arc(x, y, w, h float64, beg, end float64) {
+	if !p.doStroke() {
+		return
+	}
 	panic("not implemented")
 }
 
 // Line draws a line between (x1,y1) and (x2,y2).
-func Line(x1, y1, x2, y2 float64) {
-	proc.Line(x1, y1, x2, y2)
-}
-
-// Line draws a line between (x1,y1) and (x2,y2).
 func (p *Proc) Line(x1, y1, x2, y2 float64) {
-	if p.cfg.color.stroke == nil {
+	if !p.doStroke() {
 		return
 	}
 
@@ -113,12 +101,6 @@ func (p *Proc) Line(x1, y1, x2, y2 float64) {
 
 // Quad draws a quadrilateral, connecting the 4 points (x1,y1),
 // (x2,y2), (x3,y3) and (x4,y4) together.
-func Quad(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
-	proc.Quad(x1, y1, x2, y2, x3, y3, x4, y4)
-}
-
-// Quad draws a quadrilateral, connecting the 4 points (x1,y1),
-// (x2,y2), (x3,y3) and (x4,y4) together.
 func (p *Proc) Quad(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 	p.poly(
 		p.pt(x1, y1),
@@ -130,29 +112,13 @@ func (p *Proc) Quad(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 }
 
 // Rect draws a rectangle at (x,y) with width w and height h.
-func Rect(x, y, w, h float64) {
-	proc.Rect(x, y, w, h)
-}
-
-// Rect draws a rectangle at (x,y) with width w and height h.
 func (p *Proc) Rect(x, y, w, h float64) {
 	p.Quad(x, y, x+w, y, x+w, y+h, x, y+h)
 }
 
 // Square draws a square at (x,y) with size s.
-func Square(x, y, s float64) {
-	proc.Square(x, y, s)
-}
-
-// Square draws a square at (x,y) with size s.
 func (p *Proc) Square(x, y, s float64) {
 	p.Rect(x, y, s, s)
-}
-
-// Triangle draws a triangle, connecting the 3 points (x1,y1), (x2,y2)
-// and (x3,y3) together.
-func Triangle(x1, y1, x2, y2, x3, y3 float64) {
-	proc.Triangle(x1, y1, x2, y2, x3, y3)
 }
 
 // Triangle draws a triangle, connecting the 3 points (x1,y1), (x2,y2)
@@ -167,6 +133,10 @@ func (p *Proc) Triangle(x1, y1, x2, y2, x3, y3 float64) {
 }
 
 func (p *Proc) poly(ps ...f32.Point) {
+	if !p.doFill() && !p.doStroke() {
+		return
+	}
+
 	path := func() *clip.Path {
 		var path clip.Path
 		path.Begin(p.ctx.Ops)
@@ -177,7 +147,7 @@ func (p *Proc) poly(ps ...f32.Point) {
 		return &path
 	}
 
-	if p.cfg.color.fill != nil {
+	if p.doFill() {
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(p.cfg.color.fill),
@@ -185,7 +155,7 @@ func (p *Proc) poly(ps ...f32.Point) {
 		)
 	}
 
-	if p.cfg.color.stroke != nil {
+	if p.doStroke() {
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(p.cfg.color.stroke),

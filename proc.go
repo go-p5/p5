@@ -58,6 +58,7 @@ type Proc struct {
 		FrameRate time.Duration
 
 		mu   sync.RWMutex
+		run  bool
 		loop bool
 	}
 	cfg struct {
@@ -150,6 +151,10 @@ func (p *Proc) run() error {
 		unit.Px(float32(height)),
 	))
 
+	p.ctl.mu.Lock()
+	p.ctl.run = true
+	p.ctl.mu.Unlock()
+
 	go func() {
 		tck := time.NewTicker(p.ctl.FrameRate)
 		defer tck.Stop()
@@ -222,39 +227,46 @@ func rgba(c color.Color) color.RGBA {
 }
 
 // Canvas defines the dimensions of the painting area, in pixels.
-func Canvas(w, h int) {
-	proc.initCanvas(w, h)
+func (p *Proc) Canvas(w, h int) {
+	p.initCanvas(w, h)
 }
 
 // Background defines the background color for the painting area.
 // The default color is transparent.
-func Background(c color.Color) {
-	proc.cfg.color.bkg = c
+func (p *Proc) Background(c color.Color) {
+	p.cfg.color.bkg = c
+
+	p.ctl.mu.RLock()
+	defer p.ctl.mu.RUnlock()
+
+	if !p.ctl.run {
+		return
+	}
+
+	paint.Fill(p.ctx.Ops, rgba(c))
+}
+
+func (p *Proc) doStroke() bool {
+	return p.cfg.color.stroke != nil && p.cfg.linew > 0
 }
 
 // Stroke sets the color of the strokes.
-func Stroke(c color.Color) {
-	proc.cfg.color.stroke = c
+func (p *Proc) Stroke(c color.Color) {
+	p.cfg.color.stroke = c
+}
+
+func (p *Proc) doFill() bool {
+	return p.cfg.color.fill != nil
 }
 
 // Fill sets the color used to fill shapes.
-func Fill(c color.Color) {
-	proc.cfg.color.fill = c
-}
-
-// TextSize sets the text size.
-func TextSize(size float64) {
-	proc.TextSize(size)
+func (p *Proc) Fill(c color.Color) {
+	p.cfg.color.fill = c
 }
 
 // TextSize sets the text size.
 func (p *Proc) TextSize(size float64) {
 	p.cfg.text.size = float32(size)
-}
-
-// Text draws txt on the screen at (x,y).
-func Text(txt string, x, y float64) {
-	proc.Text(txt, x, y)
 }
 
 // Text draws txt on the screen at (x,y).
