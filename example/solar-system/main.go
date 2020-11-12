@@ -26,19 +26,8 @@ func setup() {
 	p5.Background(color.Black)
 }
 
-var (
-	tick  time.Time
-	first = true
-)
-
 func draw() {
-	if first {
-		first = false
-		tick = time.Now()
-		return
-	}
-	var dt = time.Since(tick).Seconds() * 5 * 10e5
-	tick = time.Now()
+	dt := (15 * time.Millisecond).Seconds() * 5 * 10e5
 
 	for i := range sol {
 		p := &sol[i]
