@@ -255,6 +255,11 @@ func (p *Proc) Stroke(c color.Color) {
 	p.cfg.color.stroke = c
 }
 
+// StrokeWidth sets the size of the strokes.
+func (p *Proc) StrokeWidth(v float64) {
+	p.cfg.linew = float32(v)
+}
+
 func (p *Proc) doFill() bool {
 	return p.cfg.color.fill != nil
 }

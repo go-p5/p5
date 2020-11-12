@@ -22,6 +22,11 @@ func Stroke(c color.Color) {
 	proc.Stroke(c)
 }
 
+// StrokeWidth sets the size of the strokes.
+func StrokeWidth(v float64) {
+	proc.StrokeWidth(v)
+}
+
 // Fill sets the color used to fill shapes.
 func Fill(c color.Color) {
 	proc.Fill(c)
