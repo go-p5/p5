@@ -5,15 +5,23 @@
 package p5
 
 import (
+	"fmt"
 	"image"
 	"image/color"
+	"image/gif"
+	"image/jpeg"
+	"image/png"
+	"io"
 	"log"
 	"math"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
 	"gioui.org/app"
+	"gioui.org/app/headless"
 	"gioui.org/f32"
 	"gioui.org/font/gofont"
 	"gioui.org/io/key"
@@ -83,7 +91,8 @@ type Proc struct {
 		sty   clip.StrokeStyle
 	}
 
-	ctx layout.Context
+	ctx  layout.Context
+	head *headless.Window
 }
 
 func newProc(w, h int) *Proc {
@@ -144,12 +153,19 @@ func (p *Proc) Run() {
 func (p *Proc) run() error {
 	p.Setup()
 
-	width, height := p.cnvSize()
+	var (
+		err           error
+		width, height = p.cnvSize()
+	)
 
 	w := app.NewWindow(app.Title("p5"), app.Size(
 		unit.Px(float32(width)),
 		unit.Px(float32(height)),
 	))
+	p.head, err = headless.NewWindow(int(width), int(height))
+	if err != nil {
+		return fmt.Errorf("p5: could not create headless window: %w", err)
+	}
 
 	p.ctl.mu.Lock()
 	p.ctl.run = true
@@ -163,6 +179,8 @@ func (p *Proc) run() error {
 		}
 	}()
 
+	var cnt int
+
 	for {
 		e := <-w.Events()
 		switch e := e.(type) {
@@ -173,6 +191,13 @@ func (p *Proc) run() error {
 			switch e.Name {
 			case key.NameEscape:
 				w.Close()
+			case "S":
+				fname := fmt.Sprintf("out-%03d.png", cnt)
+				err = p.Screenshot(fname)
+				if err != nil {
+					log.Printf("could not take screenshot: %+v", err)
+				}
+				cnt++
 			}
 
 		case pointer.Event:
@@ -300,4 +325,53 @@ func (p *Proc) Text(txt string, x, y float64) {
 	l.Color = rgba(p.cfg.text.color)
 	l.Alignment = p.cfg.text.align
 	l.Layout(p.ctx)
+}
+
+// Screenshot saves the current canvas to the provided file.
+// Supported file formats are: PNG, JPEG and GIF.
+func (p *Proc) Screenshot(fname string) error {
+	err := p.head.Frame(p.ctx.Ops)
+	if err != nil {
+		return fmt.Errorf("p5: could not run headless frame: %w", err)
+	}
+
+	img, err := p.head.Screenshot()
+	if err != nil {
+		return fmt.Errorf("p5: could not take screenshot: %w", err)
+	}
+
+	f, err := os.Create(fname)
+	if err != nil {
+		return fmt.Errorf("p5: could not create screenshot file: %w", err)
+	}
+	defer f.Close()
+
+	encode := png.Encode
+	switch ext := filepath.Ext(fname); strings.ToLower(ext) {
+	case ".jpeg", ".jpg":
+		encode = func(w io.Writer, img image.Image) error {
+			return jpeg.Encode(w, img, nil)
+		}
+	case ".gif":
+		encode = func(w io.Writer, img image.Image) error {
+			return gif.Encode(w, img, nil)
+		}
+	case ".png":
+		encode = png.Encode
+	default:
+		log.Printf("unknown file extension %q. using png", ext)
+		encode = png.Encode
+	}
+
+	err = encode(f, img)
+	if err != nil {
+		return fmt.Errorf("p5: could not encode screenshot: %w", err)
+	}
+
+	err = f.Close()
+	if err != nil {
+		return fmt.Errorf("p5: could not save screenshot: %w", err)
+	}
+
+	return nil
 }

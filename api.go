@@ -4,7 +4,10 @@
 
 package p5
 
-import "image/color"
+import (
+	"image/color"
+	"log"
+)
 
 // Canvas defines the dimensions of the painting area, in pixels.
 func Canvas(w, h int) {
@@ -40,4 +43,13 @@ func TextSize(size float64) {
 // Text draws txt on the screen at (x,y).
 func Text(txt string, x, y float64) {
 	proc.Text(txt, x, y)
+}
+
+// Screenshot saves the current canvas to the provided file.
+// Supported file formats are: PNG, JPEG and GIF.
+func Screenshot(fname string) {
+	err := proc.Screenshot(fname)
+	if err != nil {
+		log.Printf("%+v", err)
+	}
 }
