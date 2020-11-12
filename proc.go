@@ -154,7 +154,6 @@ func (p *Proc) run() error {
 		case key.Event:
 			switch e.Name {
 			case key.NameEscape:
-				w.Invalidate()
 				w.Close()
 			}
 
