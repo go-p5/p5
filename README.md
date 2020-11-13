@@ -16,6 +16,7 @@ package main
 
 import (
 	"image/color"
+	"math"
 
 	"github.com/go-p5/p5"
 )
