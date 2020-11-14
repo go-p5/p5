@@ -8,6 +8,23 @@
 
 `p5` is a simple package that provides primitives resembling the ones exposed by the [p5/processing](https://p5js.org) library.
 
+## License
+
+`p5` is released under the `BSD-3` license.
+
+## Documentation
+
+Documentation for `p5` is served by [GoDev](https://pkg.go.dev/github.com/go-p5/p5).
+
+## Contributing
+
+Guidelines for contributing to [go-p5](https://github.com/go-p5/p5) the same than for the [Go project](https://golang.org/doc/contribute.html#commit_changes).
+
+## Installation
+
+This project relies on [Gio](https://gioui.org) for the graphics parts.
+As `Gio` uses system libraries to display graphics, you need to install those for your system/OS for `p5` to work properly.
+See [Gio/install](https://gioui.org/doc/install) for details.
 
 ## Example
 
