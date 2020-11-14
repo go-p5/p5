@@ -346,7 +346,7 @@ func (p *Proc) Screenshot(fname string) error {
 	}
 	defer f.Close()
 
-	encode := png.Encode
+	var encode func(io.Writer, image.Image) error
 	switch ext := filepath.Ext(fname); strings.ToLower(ext) {
 	case ".jpeg", ".jpg":
 		encode = func(w io.Writer, img image.Image) error {

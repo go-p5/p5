@@ -78,23 +78,22 @@ func (p *Proc) Arc(x, y, w, h float64, beg, end float64) {
 	}
 
 	var (
-		c   = p.pt(x, y)
-		a   = p.cfg.trX(w)
-		b   = p.cfg.trY(h)
-		foc = 0.0
-		f1  f32.Point
-		f2  f32.Point
+		c  = p.pt(x, y)
+		a  = p.cfg.trX(w)
+		b  = p.cfg.trY(h)
+		f1 f32.Point
+		f2 f32.Point
 	)
 
 	switch {
 	case a >= b:
-		foc = math.Sqrt(a*a - b*b)
-		f1 = c.Add(p.pt(+foc, 0))
-		f2 = c.Add(p.pt(-foc, 0))
+		f := math.Sqrt(a*a - b*b)
+		f1 = c.Add(p.pt(+f, 0))
+		f2 = c.Add(p.pt(-f, 0))
 	default:
-		foc = math.Sqrt(b*b - a*a)
-		f1 = c.Add(p.pt(0, +foc))
-		f2 = c.Add(p.pt(0, -foc))
+		f := math.Sqrt(b*b - a*a)
+		f1 = c.Add(p.pt(0, +f))
+		f2 = c.Add(p.pt(0, -f))
 	}
 
 	var (
