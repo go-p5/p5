@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:generate embedmd -w README.md
+
 package p5 // import "github.com/go-p5/p5"
 
 var (

@@ -28,6 +28,7 @@ See [Gio/install](https://gioui.org/doc/install) for details.
 
 ## Example
 
+[embedmd]:# (example/hello/main.go go /package main/ $)
 ```go
 package main
 
