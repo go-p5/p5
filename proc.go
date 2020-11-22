@@ -246,9 +246,9 @@ func (p *Proc) pt(x, y float64) f32.Point {
 	}
 }
 
-func rgba(c color.Color) color.RGBA {
+func rgba(c color.Color) color.NRGBA {
 	r, g, b, a := c.RGBA()
-	return color.RGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
+	return color.NRGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
 }
 
 // Canvas defines the dimensions of the painting area, in pixels.
