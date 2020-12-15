@@ -8,6 +8,7 @@ import (
 	"math"
 
 	"gioui.org/f32"
+	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 )
@@ -39,28 +40,37 @@ func (p *Proc) Ellipse(x, y, w, h float64) {
 		f2 = p.pt(x, y-ec).Sub(p1)
 	}
 
-	path := func() *clip.Path {
+	path := func(o *op.Ops) clip.PathSpec {
 		var path clip.Path
-		path.Begin(p.ctx.Ops)
+		path.Begin(o)
 		path.Move(p1)
 		path.Arc(f1, f2, 2*math.Pi)
-		return &path
+		return path.End()
 	}
 
 	if p.cfg.color.fill != nil {
+		stk := op.Push(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(p.cfg.color.fill),
-			path().Outline(),
+			clip.Outline{
+				Path: path(p.ctx.Ops),
+			}.Op(),
 		)
+		stk.Pop()
 	}
 
 	if p.cfg.color.stroke != nil {
+		stk := op.Push(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(p.cfg.color.stroke),
-			path().Stroke(p.cfg.linew, p.cfg.sty),
+			clip.Stroke{
+				Path:  path(p.ctx.Ops),
+				Style: p.cfg.stroke,
+			}.Op(),
 		)
+		stk.Pop()
 	}
 }
 
@@ -101,12 +111,20 @@ func (p *Proc) Arc(x, y, w, h float64, beg, end float64) {
 		p0       = p.pt(a*cos, b*sin).Add(c)
 		path     clip.Path
 	)
+	stk := op.Push(p.ctx.Ops)
 	path.Begin(p.ctx.Ops)
 	path.Move(p0)
 	path.Arc(f1.Sub(p0), f2.Sub(p0), float32(end-beg))
 
-	arc := path.Stroke(p.cfg.linew, p.cfg.sty)
-	paint.FillShape(p.ctx.Ops, rgba(p.cfg.color.stroke), arc)
+	paint.FillShape(
+		p.ctx.Ops,
+		rgba(p.cfg.color.stroke),
+		clip.Stroke{
+			Path:  path.End(),
+			Style: p.cfg.stroke,
+		}.Op(),
+	)
+	stk.Pop()
 }
 
 // Line draws a line between (x1,y1) and (x2,y2).
@@ -120,13 +138,20 @@ func (p *Proc) Line(x1, y1, x2, y2 float64) {
 		p2   = p.pt(x2, y2)
 		path clip.Path
 	)
+	stk := op.Push(p.ctx.Ops)
 	path.Begin(p.ctx.Ops)
 	path.Move(p1)
 	path.Line(p2.Sub(path.Pos()))
 
-	line := path.Stroke(p.cfg.linew, p.cfg.sty)
-
-	paint.FillShape(p.ctx.Ops, rgba(p.cfg.color.stroke), line)
+	paint.FillShape(
+		p.ctx.Ops,
+		rgba(p.cfg.color.stroke),
+		clip.Stroke{
+			Path:  path.End(),
+			Style: p.cfg.stroke,
+		}.Op(),
+	)
+	stk.Pop()
 }
 
 // Quad draws a quadrilateral, connecting the 4 points (x1,y1),
@@ -167,29 +192,38 @@ func (p *Proc) poly(ps ...f32.Point) {
 		return
 	}
 
-	path := func() *clip.Path {
+	path := func(o *op.Ops) clip.PathSpec {
 		var path clip.Path
-		path.Begin(p.ctx.Ops)
+		path.Begin(o)
 		path.Move(ps[0])
 		for _, p := range ps[1:] {
 			path.Line(p.Sub(path.Pos()))
 		}
-		return &path
+		return path.End()
 	}
 
 	if p.doFill() {
+		stk := op.Push(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(p.cfg.color.fill),
-			path().Outline(),
+			clip.Outline{
+				Path: path(p.ctx.Ops),
+			}.Op(),
 		)
+		stk.Pop()
 	}
 
 	if p.doStroke() {
+		stk := op.Push(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(p.cfg.color.stroke),
-			path().Stroke(p.cfg.linew, p.cfg.sty),
+			clip.Stroke{
+				Path:  path(p.ctx.Ops),
+				Style: p.cfg.stroke,
+			}.Op(),
 		)
+		stk.Pop()
 	}
 }

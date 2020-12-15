@@ -86,9 +86,8 @@ type Proc struct {
 			size  float32
 		}
 
-		th    *material.Theme
-		linew float32
-		sty   clip.StrokeStyle
+		th     *material.Theme
+		stroke clip.StrokeStyle
 	}
 
 	ctx  layout.Context
@@ -109,7 +108,7 @@ func newProc(w, h int) *Proc {
 	proc.initCanvas(w, h)
 
 	proc.cfg.th = material.NewTheme(gofont.Collection())
-	proc.cfg.linew = 2
+	proc.cfg.stroke.Width = 2
 
 	return proc
 }
@@ -191,7 +190,7 @@ func (p *Proc) run() error {
 			switch e.Name {
 			case key.NameEscape:
 				w.Close()
-			case "S":
+			case "F11":
 				fname := fmt.Sprintf("out-%03d.png", cnt)
 				err = p.Screenshot(fname)
 				if err != nil {
@@ -272,7 +271,7 @@ func (p *Proc) Background(c color.Color) {
 }
 
 func (p *Proc) doStroke() bool {
-	return p.cfg.color.stroke != nil && p.cfg.linew > 0
+	return p.cfg.color.stroke != nil && p.cfg.stroke.Width > 0
 }
 
 // Stroke sets the color of the strokes.
@@ -282,7 +281,7 @@ func (p *Proc) Stroke(c color.Color) {
 
 // StrokeWidth sets the size of the strokes.
 func (p *Proc) StrokeWidth(v float64) {
-	p.cfg.linew = float32(v)
+	p.cfg.stroke.Width = float32(v)
 }
 
 func (p *Proc) doFill() bool {

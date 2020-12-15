@@ -43,7 +43,7 @@ jobs:
     - name: Install Linux packages
       run: |
         sudo apt-get update
-        sudo apt-get install -qq pkg-config libgles2-mesa-dev libxkbcommon-dev libxkbcommon-x11-dev
+        sudo apt-get install -qq pkg-config libwayland-dev libx11-dev libx11-xcb-dev libxkbcommon-dev libxkbcommon-x11-dev libgles2-mesa-dev libegl1-mesa-dev libffi-dev libxcursor-dev
     
     - name: Build-Linux-64b
       run: |
