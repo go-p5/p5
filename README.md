@@ -5,6 +5,7 @@
 [![CI](https://github.com/go-p5/p5/workflows/CI/badge.svg)](https://github.com/go-p5/p5/actions)
 [![GoDoc](https://godoc.org/github.com/go-p5/p5?status.svg)](https://godoc.org/github.com/go-p5/p5)
 [![License](https://img.shields.io/badge/License-BSD--3-blue.svg)](https://github.com/go-p5/p5/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/go-p5/p5/branch/main/graph/badge.svg)](https://codecov.io/gh/go-p5/p5)
 
 `p5` is a simple package that provides primitives resembling the ones exposed by the [p5/processing](https://p5js.org) library.
 
