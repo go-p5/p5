@@ -150,6 +150,8 @@ func (p *Proc) Run() {
 }
 
 func (p *Proc) run() error {
+	p.setupUserFuncs()
+
 	p.Setup()
 
 	var (
@@ -214,9 +216,21 @@ func (p *Proc) run() error {
 
 		case system.FrameEvent:
 			if p.loop() {
-				p.draw(w, e)
+				p.draw(e)
 			}
 		}
+	}
+}
+
+func (p *Proc) setupUserFuncs() {
+	if p.Setup == nil {
+		p.Setup = func() {}
+	}
+	if p.Draw == nil {
+		p.Draw = func() {}
+	}
+	if p.Mouse == nil {
+		p.Mouse = func() {}
 	}
 }
 
@@ -226,7 +240,7 @@ func (p *Proc) loop() bool {
 	return p.ctl.loop
 }
 
-func (p *Proc) draw(win *app.Window, e system.FrameEvent) {
+func (p *Proc) draw(e system.FrameEvent) {
 	p.ctx = layout.NewContext(p.ctx.Ops, e)
 
 	ops := p.ctx.Ops
