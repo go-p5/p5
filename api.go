@@ -11,44 +11,44 @@ import (
 
 // Canvas defines the dimensions of the painting area, in pixels.
 func Canvas(w, h int) {
-	proc.Canvas(w, h)
+	gproc.Canvas(w, h)
 }
 
 // Background defines the background color for the painting area.
 // The default color is transparent.
 func Background(c color.Color) {
-	proc.Background(c)
+	gproc.Background(c)
 }
 
 // Stroke sets the color of the strokes.
 func Stroke(c color.Color) {
-	proc.Stroke(c)
+	gproc.Stroke(c)
 }
 
 // StrokeWidth sets the size of the strokes.
 func StrokeWidth(v float64) {
-	proc.StrokeWidth(v)
+	gproc.StrokeWidth(v)
 }
 
 // Fill sets the color used to fill shapes.
 func Fill(c color.Color) {
-	proc.Fill(c)
+	gproc.Fill(c)
 }
 
 // TextSize sets the text size.
 func TextSize(size float64) {
-	proc.TextSize(size)
+	gproc.TextSize(size)
 }
 
 // Text draws txt on the screen at (x,y).
 func Text(txt string, x, y float64) {
-	proc.Text(txt, x, y)
+	gproc.Text(txt, x, y)
 }
 
 // Screenshot saves the current canvas to the provided file.
 // Supported file formats are: PNG, JPEG and GIF.
 func Screenshot(fname string) {
-	err := proc.Screenshot(fname)
+	err := gproc.Screenshot(fname)
 	if err != nil {
 		log.Printf("%+v", err)
 	}

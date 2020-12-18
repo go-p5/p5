@@ -34,16 +34,16 @@
 package p5 // import "github.com/go-p5/p5"
 
 var (
-	// proc is the global Proc instance used by the p5js-like API.
-	proc = newProc(defaultWidth, defaultHeight)
+	// gproc is the global Proc instance used by the p5js-like API.
+	gproc = newProc(defaultWidth, defaultHeight)
 )
 
 // Run executes the user functions setup and draw.
 // Run never exits.
 func Run(setup, draw Func) {
-	proc.Setup = setup
-	proc.Draw = draw
-	proc.Run()
+	gproc.Setup = setup
+	gproc.Draw = draw
+	gproc.Run()
 }
 
 // Func is the type of functions users provide to p5.

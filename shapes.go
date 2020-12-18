@@ -180,10 +180,10 @@ func (p *Proc) Square(x, y, s float64) {
 // and (x3,y3) together.
 func (p *Proc) Triangle(x1, y1, x2, y2, x3, y3 float64) {
 	p.poly(
-		proc.pt(x1, y1),
-		proc.pt(x2, y2),
-		proc.pt(x3, y3),
-		proc.pt(x1, y1),
+		p.pt(x1, y1),
+		p.pt(x2, y2),
+		p.pt(x3, y3),
+		p.pt(x1, y1),
 	)
 }
 

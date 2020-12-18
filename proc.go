@@ -133,8 +133,8 @@ func (p *Proc) initCanvas(w, h int) {
 }
 
 func (p *Proc) cnvSize() (w, h float64) {
-	w = math.Abs(proc.cfg.x.Max - proc.cfg.x.Min)
-	h = math.Abs(proc.cfg.y.Max - proc.cfg.y.Min)
+	w = math.Abs(p.cfg.x.Max - p.cfg.x.Min)
+	h = math.Abs(p.cfg.y.Max - p.cfg.y.Min)
 	return w, h
 }
 
@@ -240,8 +240,8 @@ func (p *Proc) draw(win *app.Window, e system.FrameEvent) {
 
 func (p *Proc) pt(x, y float64) f32.Point {
 	return f32.Point{
-		X: float32(proc.cfg.trX(x)),
-		Y: float32(proc.cfg.trY(y)),
+		X: float32(p.cfg.trX(x)),
+		Y: float32(p.cfg.trY(y)),
 	}
 }
 
