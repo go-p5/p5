@@ -187,37 +187,34 @@ func (p *Proc) Triangle(x1, y1, x2, y2, x3, y3 float64) {
 	)
 }
 
+// Bezier draws a cubic Bézier curve from (x1,y1) to (x4,y4) and two control points (x2,y2) and (x3,y3)
 func (p *Proc) Bezier(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 	if !p.doStroke() {
 		return
 	}
 
 	var (
-		sp  = p.pt(x1, y1)
-		cp0 = p.pt(x2, y2).Sub(sp)
-		cp1 = p.pt(x3, y3).Sub(sp)
-		ep  = p.pt(x4, y4).Sub(sp)
+		sp   = p.pt(x1, y1)
+		cp0  = p.pt(x2, y2).Sub(sp)
+		cp1  = p.pt(x3, y3).Sub(sp)
+		ep   = p.pt(x4, y4).Sub(sp)
+		path clip.Path
 	)
 
-	path := func(o *op.Ops) clip.PathSpec {
-		var path clip.Path
-		path.Begin(p.ctx.Ops)
-		path.Move(sp)
-		path.Cube(cp0, cp1, ep)
-		return path.End()
-	}
+	defer op.Push(p.ctx.Ops).Pop()
 
-	stk := op.Push(p.ctx.Ops)
+	path.Begin(p.ctx.Ops)
+	path.Move(sp)
+	path.Cube(cp0, cp1, ep)
+
 	paint.FillShape(
 		p.ctx.Ops,
 		rgba(p.cfg.color.stroke),
 		clip.Stroke{
-			Path:  path(p.ctx.Ops),
+			Path:  path.End(),
 			Style: p.cfg.stroke,
 		}.Op(),
 	)
-	stk.Pop()
-
 }
 
 func (p *Proc) poly(ps ...f32.Point) {

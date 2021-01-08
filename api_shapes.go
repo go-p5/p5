@@ -48,7 +48,7 @@ func Triangle(x1, y1, x2, y2, x3, y3 float64) {
 	gproc.Triangle(x1, y1, x2, y2, x3, y3)
 }
 
-// Bezier draws cubic Bézier curve from (x1,y1), through two control points (x2,y2) and (x3,y3) to (x4,y5).
+// Bezier draws a cubic Bézier curve from (x1,y1) to (x4,y4) and two control points (x2,y2) and (x3,y3).
 func Bezier(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 	gproc.Bezier(x1, y1, x2, y2, x3, y3, x4, y4)
 }
