@@ -23,8 +23,15 @@ var GenerateTestData = flag.Bool("regen", false, "Uses the current state to rege
 
 type testProc struct {
 	*Proc
-	w, h  int
-	fname string
+	global bool
+	w, h   int
+	fname  string
+}
+
+func newTestGProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname string) *testProc {
+	p := newTestProc(t, w, h, setup, draw, fname)
+	p.global = true
+	return p
 }
 
 func newTestProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname string) *testProc {
@@ -44,6 +51,14 @@ func newTestProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname string
 
 func (p *testProc) Run(t *testing.T) {
 	t.Helper()
+
+	if p.global {
+		old := gproc
+		defer func() {
+			gproc = old
+		}()
+		gproc = p.Proc
+	}
 
 	p.setupUserFuncs()
 

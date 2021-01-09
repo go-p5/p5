@@ -16,30 +16,30 @@ func TestPushPop(t *testing.T) {
 		h = 200
 	)
 
-	proc := newTestProc(t, w, h,
+	proc := newTestGProc(t, w, h,
 		func(proc *Proc) {
-			proc.Background(color.Gray{Y: 220})
-			proc.Fill(color.RGBA{R: 255, A: 255})
+			Background(color.Gray{Y: 220})
+			Fill(color.RGBA{R: 255, A: 255})
 		},
 		func(proc *Proc) {
-			proc.Stroke(color.RGBA{B: 255, A: 255})
+			Stroke(color.RGBA{B: 255, A: 255})
 
-			proc.Push()
-			proc.Fill(color.RGBA{G: 255, A: 255})
+			Push()
+			Fill(color.RGBA{G: 255, A: 255})
 			{
-				proc.Push()
-				proc.Background(color.Black)
-				proc.Pop()
+				Push()
+				Background(color.Black)
+				Pop()
 			}
-			proc.TextSize(10)
-			proc.Stroke(color.RGBA{R: 255, A: 255})
-			proc.Rect(20, 20, 160, 160)
-			proc.Text("sub-context", 25, 100)
-			proc.Pop()
+			TextSize(10)
+			Stroke(color.RGBA{R: 255, A: 255})
+			Rect(20, 20, 160, 160)
+			Text("sub-context", 25, 100)
+			Pop()
 
-			proc.Rect(120, 120, 70, 70)
-			proc.TextSize(15)
-			proc.Text("global", 125, 150)
+			Rect(120, 120, 70, 70)
+			TextSize(15)
+			Text("global", 125, 150)
 		},
 		"testdata/push-pop.png",
 	)
@@ -53,25 +53,25 @@ func TestRotate(t *testing.T) {
 		h = 200
 	)
 
-	proc := newTestProc(t, w, h,
+	proc := newTestGProc(t, w, h,
 		func(proc *Proc) {
-			proc.Background(color.Gray{Y: 220})
+			Background(color.Gray{Y: 220})
 		},
 		func(proc *Proc) {
-			proc.Fill(color.RGBA{R: 255, A: 255})
-			proc.Stroke(color.RGBA{B: 255, A: 255})
-			proc.Rect(10, 150, 70, 50)
+			Fill(color.RGBA{R: 255, A: 255})
+			Stroke(color.RGBA{B: 255, A: 255})
+			Rect(10, 150, 70, 50)
 
 			for i := 1; i < 10; i++ {
-				proc.Push()
-				proc.Rotate(float64(i) * math.Pi / 30)
-				proc.Stroke(color.RGBA{
+				Push()
+				Rotate(float64(i) * math.Pi / 30)
+				Stroke(color.RGBA{
 					B: uint8((i-1)%2) * 255,
 					A: 255,
 				})
-				proc.Fill(nil)
-				proc.Rect(10, 150, 70, 50)
-				proc.Pop()
+				Fill(nil)
+				Rect(10, 150, 70, 50)
+				Pop()
 			}
 		},
 		"testdata/rotate.png",
@@ -86,29 +86,29 @@ func TestScale(t *testing.T) {
 		h = 200
 	)
 
-	proc := newTestProc(t, w, h,
+	proc := newTestGProc(t, w, h,
 		func(proc *Proc) {
-			proc.Background(color.Gray{Y: 220})
+			Background(color.Gray{Y: 220})
 		},
 		func(proc *Proc) {
-			proc.Fill(color.RGBA{B: 255, A: 128})
-			proc.Stroke(color.RGBA{B: 255, A: 128})
+			Fill(color.RGBA{B: 255, A: 128})
+			Stroke(color.RGBA{B: 255, A: 128})
 
-			proc.Push()
-			proc.Scale(0.5, 1)
-			proc.Fill(color.RGBA{R: 255, A: 128})
-			proc.Stroke(color.RGBA{R: 255, A: 128})
-			proc.Rect(30, 20, 50, 50)
-			proc.Pop()
+			Push()
+			Scale(0.5, 1)
+			Fill(color.RGBA{R: 255, A: 128})
+			Stroke(color.RGBA{R: 255, A: 128})
+			Rect(30, 20, 50, 50)
+			Pop()
 
-			proc.Push()
-			proc.Fill(color.RGBA{G: 255, A: 128})
-			proc.Stroke(color.RGBA{G: 255, A: 128})
-			proc.Scale(0.5, 1.3)
-			proc.Rect(30, 20, 50, 50)
-			proc.Pop()
+			Push()
+			Fill(color.RGBA{G: 255, A: 128})
+			Stroke(color.RGBA{G: 255, A: 128})
+			Scale(0.5, 1.3)
+			Rect(30, 20, 50, 50)
+			Pop()
 
-			proc.Rect(30, 20, 50, 50)
+			Rect(30, 20, 50, 50)
 		},
 		"testdata/scale.png",
 	)
@@ -122,19 +122,19 @@ func TestTranslate(t *testing.T) {
 		h = 200
 	)
 
-	proc := newTestProc(t, w, h,
+	proc := newTestGProc(t, w, h,
 		func(proc *Proc) {
-			proc.Background(color.Gray{Y: 220})
+			Background(color.Gray{Y: 220})
 		},
 		func(proc *Proc) {
-			proc.Fill(color.RGBA{B: 255, A: 128})
-			proc.Stroke(color.RGBA{B: 255, A: 128})
+			Fill(color.RGBA{B: 255, A: 128})
+			Stroke(color.RGBA{B: 255, A: 128})
 
 			for i := 0; i < 50; i++ {
-				proc.Push()
-				proc.Translate(float64(i)*5, float64(i)*10)
-				proc.Rect(0, 0, 20, 30)
-				proc.Pop()
+				Push()
+				Translate(float64(i)*5, float64(i)*10)
+				Rect(0, 0, 20, 30)
+				Pop()
 			}
 		},
 		"testdata/translate.png",
