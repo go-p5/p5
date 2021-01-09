@@ -60,3 +60,33 @@ func TestAPIShapes(t *testing.T) {
 	gproc = proc.Proc
 	proc.Run(t)
 }
+
+func TestBezier(t *testing.T) {
+	old := gproc
+	defer func() {
+		gproc = old
+	}()
+
+	const (
+		w = 200
+		h = 200
+	)
+	proc := newTestProc(t, w, h,
+		func(*Proc) {
+			Canvas(400, 400)
+			Background(color.Gray{Y: 220})
+		},
+		func(*Proc) {
+			Stroke(color.RGBA{B: 255, A: 128})
+			StrokeWidth(3)
+			Bezier(100, 340, 230, 360, 100, 80, 300, 260)
+
+			Stroke(color.RGBA{R: 255, A: 208})
+			StrokeWidth(5)
+			Bezier(100, 100, 230, 80, 100, 30, 300, 200)
+		},
+		"testdata/api_shapes_bezier.png",
+	)
+	gproc = proc.Proc
+	proc.Run(t)
+}
