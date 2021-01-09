@@ -79,3 +79,39 @@ func TestRotate(t *testing.T) {
 
 	proc.Run(t)
 }
+
+func TestScale(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+
+	proc := newTestProc(t, w, h,
+		func(proc *Proc) {
+			proc.Background(color.Gray{Y: 220})
+		},
+		func(proc *Proc) {
+			proc.Fill(color.RGBA{B: 255, A: 128})
+			proc.Stroke(color.RGBA{B: 255, A: 128})
+
+			proc.Push()
+			proc.Scale(0.5, 1)
+			proc.Fill(color.RGBA{R: 255, A: 128})
+			proc.Stroke(color.RGBA{R: 255, A: 128})
+			proc.Rect(30, 20, 50, 50)
+			proc.Pop()
+
+			proc.Push()
+			proc.Fill(color.RGBA{G: 255, A: 128})
+			proc.Stroke(color.RGBA{G: 255, A: 128})
+			proc.Scale(0.5, 1.3)
+			proc.Rect(30, 20, 50, 50)
+			proc.Pop()
+
+			proc.Rect(30, 20, 50, 50)
+		},
+		"testdata/scale.png",
+	)
+
+	proc.Run(t)
+}

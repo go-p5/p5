@@ -69,3 +69,8 @@ func Screenshot(fname string) {
 func Rotate(angle float64) {
 	gproc.Rotate(angle)
 }
+
+// Scale rescales the graphical context by x and y.
+func Scale(x, y float64) {
+	gproc.Scale(x, y)
+}

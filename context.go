@@ -67,6 +67,15 @@ func (stk *stackOps) rotate(angle float64) {
 	op.Affine(aff).Add(ops)
 }
 
+func (stk *stackOps) scale(x, y float64) {
+	ops := stk.ops
+	aff := f32.Affine2D{}.Scale(
+		f32.Pt(0, 0),
+		f32.Pt(float32(x), float32(y)),
+	)
+	op.Affine(aff).Add(ops)
+}
+
 // Push saves the current drawing style settings and transformations.
 func (p *Proc) Push() {
 	p.stk.push()
@@ -81,4 +90,9 @@ func (p *Proc) Pop() {
 // Positive angles rotate counter-clockwise.
 func (p *Proc) Rotate(angle float64) {
 	p.stk.rotate(angle)
+}
+
+// Scale rescales the graphical context by x and y.
+func (p *Proc) Scale(x, y float64) {
+	p.stk.scale(x, y)
 }
