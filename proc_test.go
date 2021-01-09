@@ -90,7 +90,7 @@ func (p *testProc) Run(t *testing.T) {
 		t.Fatalf("could not read back golden: %+v", err)
 	}
 
-	ok, err := cmpimg.EqualApprox(ext[1:], got, want, 0.05)
+	ok, err := cmpimg.EqualApprox(ext[1:], got, want, 0.1)
 	if err != nil {
 		t.Fatalf("%s: could not compare images: %+v", p.fname, err)
 	}
