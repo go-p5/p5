@@ -5,6 +5,7 @@
 package p5
 
 import (
+	"flag"
 	"image"
 	"image/color"
 	"io/ioutil"
@@ -17,6 +18,8 @@ import (
 	"gioui.org/op"
 	"github.com/go-p5/p5/internal/cmpimg"
 )
+
+var GenerateTestData = flag.Bool("regen", false, "Uses the current state to regenerate the test data.")
 
 type testProc struct {
 	*Proc
@@ -74,6 +77,14 @@ func (p *testProc) Run(t *testing.T) {
 
 	ext := filepath.Ext(fname)
 	fname = fname[:len(fname)-len(ext)] + "_golden" + ext
+
+	if *GenerateTestData {
+		err = ioutil.WriteFile(fname, got, 0644)
+		if err != nil {
+			t.Fatalf("could not regen reference file %q: %+v", fname, err)
+		}
+	}
+
 	want, err := ioutil.ReadFile(fname)
 	if err != nil {
 		t.Fatalf("could not read back golden: %+v", err)
