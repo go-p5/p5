@@ -6,6 +6,7 @@ package p5
 
 import (
 	"image/color"
+	"math"
 	"testing"
 )
 
@@ -41,6 +42,39 @@ func TestPushPop(t *testing.T) {
 			proc.Text("global", 125, 150)
 		},
 		"testdata/push-pop.png",
+	)
+
+	proc.Run(t)
+}
+
+func TestRotate(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+
+	proc := newTestProc(t, w, h,
+		func(proc *Proc) {
+			proc.Background(color.Gray{Y: 220})
+		},
+		func(proc *Proc) {
+			proc.Fill(color.RGBA{R: 255, A: 255})
+			proc.Stroke(color.RGBA{B: 255, A: 255})
+			proc.Rect(10, 150, 70, 50)
+
+			for i := 1; i < 10; i++ {
+				proc.Push()
+				proc.Rotate(float64(i) * math.Pi / 30)
+				proc.Stroke(color.RGBA{
+					B: uint8((i-1)%2) * 255,
+					A: 255,
+				})
+				proc.Fill(nil)
+				proc.Rect(10, 150, 70, 50)
+				proc.Pop()
+			}
+		},
+		"testdata/rotate.png",
 	)
 
 	proc.Run(t)

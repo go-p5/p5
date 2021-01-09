@@ -63,3 +63,9 @@ func Screenshot(fname string) {
 		log.Printf("%+v", err)
 	}
 }
+
+// Rotate rotates the graphical context by angle radians.
+// Positive angles rotate counter-clockwise.
+func Rotate(angle float64) {
+	gproc.Rotate(angle)
+}

@@ -7,6 +7,7 @@ package p5
 import (
 	"image/color"
 
+	"gioui.org/f32"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/text"
@@ -60,6 +61,12 @@ func (stk *stackOps) pop() {
 	stk.ctx = stk.ctx[:len(stk.ctx)-1]
 }
 
+func (stk *stackOps) rotate(angle float64) {
+	ops := stk.ops
+	aff := f32.Affine2D{}.Rotate(f32.Pt(0, 0), float32(-angle))
+	op.Affine(aff).Add(ops)
+}
+
 // Push saves the current drawing style settings and transformations.
 func (p *Proc) Push() {
 	p.stk.push()
@@ -68,4 +75,10 @@ func (p *Proc) Push() {
 // Pop restores the previous drawing style settings and transformations.
 func (p *Proc) Pop() {
 	p.stk.pop()
+}
+
+// Rotate rotates the graphical context by angle radians.
+// Positive angles rotate counter-clockwise.
+func (p *Proc) Rotate(angle float64) {
+	p.stk.rotate(angle)
 }
