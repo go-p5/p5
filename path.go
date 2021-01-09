@@ -84,7 +84,7 @@ func (p *Path) End() {
 		stk := op.Push(p.proc.ctx.Ops)
 		paint.FillShape(
 			p.proc.ctx.Ops,
-			rgba(p.proc.cfg.color.fill),
+			rgba(p.proc.stk.cur().fill),
 			clip.Outline{
 				Path: p.path(),
 			}.Op(),
@@ -96,10 +96,10 @@ func (p *Path) End() {
 		stk := op.Push(p.proc.ctx.Ops)
 		paint.FillShape(
 			p.proc.ctx.Ops,
-			rgba(p.proc.cfg.color.stroke),
+			rgba(p.proc.stk.cur().stroke.color),
 			clip.Stroke{
 				Path:  p.path(),
-				Style: p.proc.cfg.stroke,
+				Style: p.proc.stk.cur().stroke.style,
 			}.Op(),
 		)
 		stk.Pop()

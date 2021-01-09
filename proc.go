@@ -29,7 +29,6 @@ import (
 	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
@@ -75,22 +74,11 @@ type Proc struct {
 		trX func(v float64) float64 // translate from user- to system coords
 		trY func(v float64) float64 // translate from user- to system coords
 
-		color struct {
-			bkg    color.Color
-			fill   color.Color
-			stroke color.Color
-		}
-		text struct {
-			color color.Color
-			align text.Alignment
-			size  float32
-		}
-
-		th     *material.Theme
-		stroke clip.StrokeStyle
+		th *material.Theme
 	}
 
 	ctx  layout.Context
+	stk  *stackOps
 	head *headless.Window
 }
 
@@ -105,10 +93,11 @@ func newProc(w, h int) *Proc {
 	}
 	proc.ctl.FrameRate = defaultFrameRate
 	proc.ctl.loop = true
+	proc.stk = newStackOps(proc.ctx.Ops)
 	proc.initCanvas(w, h)
 
 	proc.cfg.th = material.NewTheme(gofont.Collection())
-	proc.cfg.stroke.Width = 2
+	proc.stk.cur().stroke.style.Width = 2
 
 	return proc
 }
@@ -123,13 +112,13 @@ func (p *Proc) initCanvas(w, h int) {
 	p.cfg.trY = func(v float64) float64 {
 		return (v - p.cfg.y.Min) / (p.cfg.y.Max - p.cfg.y.Min) * float64(h)
 	}
-	p.cfg.color.bkg = defaultBkgColor
-	p.cfg.color.fill = defaultFillColor
-	p.cfg.color.stroke = defaultStrokeColor
+	p.stk.cur().bkg = defaultBkgColor
+	p.stk.cur().fill = defaultFillColor
+	p.stk.cur().stroke.color = defaultStrokeColor
 
-	p.cfg.text.color = defaultTextColor
-	p.cfg.text.align = text.Start
-	p.cfg.text.size = defaultTextSize
+	p.stk.cur().text.color = defaultTextColor
+	p.stk.cur().text.align = text.Start
+	p.stk.cur().text.size = defaultTextSize
 }
 
 func (p *Proc) cnvSize() (w, h float64) {
@@ -244,7 +233,7 @@ func (p *Proc) draw(e system.FrameEvent) {
 	p.ctx = layout.NewContext(p.ctx.Ops, e)
 
 	ops := p.ctx.Ops
-	clr := rgba(p.cfg.color.bkg)
+	clr := rgba(p.stk.cur().bkg)
 	paint.Fill(ops, clr)
 
 	p.Draw()
@@ -272,7 +261,7 @@ func (p *Proc) Canvas(w, h int) {
 // Background defines the background color for the painting area.
 // The default color is transparent.
 func (p *Proc) Background(c color.Color) {
-	p.cfg.color.bkg = c
+	p.stk.cur().bkg = c
 
 	p.ctl.mu.RLock()
 	defer p.ctl.mu.RUnlock()
@@ -285,31 +274,32 @@ func (p *Proc) Background(c color.Color) {
 }
 
 func (p *Proc) doStroke() bool {
-	return p.cfg.color.stroke != nil && p.cfg.stroke.Width > 0
+	return p.stk.cur().stroke.color != nil &&
+		p.stk.cur().stroke.style.Width > 0
 }
 
 // Stroke sets the color of the strokes.
 func (p *Proc) Stroke(c color.Color) {
-	p.cfg.color.stroke = c
+	p.stk.cur().stroke.color = c
 }
 
 // StrokeWidth sets the size of the strokes.
 func (p *Proc) StrokeWidth(v float64) {
-	p.cfg.stroke.Width = float32(v)
+	p.stk.cur().stroke.style.Width = float32(v)
 }
 
 func (p *Proc) doFill() bool {
-	return p.cfg.color.fill != nil
+	return p.stk.cur().fill != nil
 }
 
 // Fill sets the color used to fill shapes.
 func (p *Proc) Fill(c color.Color) {
-	p.cfg.color.fill = c
+	p.stk.cur().fill = c
 }
 
 // TextSize sets the text size.
 func (p *Proc) TextSize(size float64) {
-	p.cfg.text.size = float32(size)
+	p.stk.cur().text.size = float32(size)
 }
 
 // Text draws txt on the screen at (x,y).
@@ -320,9 +310,9 @@ func (p *Proc) Text(txt string, x, y float64) {
 	var (
 		offset = x
 		w, _   = p.cnvSize()
-		size   = p.cfg.text.size
+		size   = p.stk.cur().text.size
 	)
-	switch p.cfg.text.align {
+	switch p.stk.cur().text.align {
 	case text.End:
 		offset = x - w
 	case text.Middle:
@@ -335,8 +325,8 @@ func (p *Proc) Text(txt string, x, y float64) {
 	}).Add(p.ctx.Ops) // shift to use baseline
 
 	l := material.Label(p.cfg.th, unit.Px(size), txt)
-	l.Color = rgba(p.cfg.text.color)
-	l.Alignment = p.cfg.text.align
+	l.Color = rgba(p.stk.cur().text.color)
+	l.Alignment = p.stk.cur().text.align
 	l.Layout(p.ctx)
 }
 

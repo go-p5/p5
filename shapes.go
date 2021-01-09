@@ -48,11 +48,11 @@ func (p *Proc) Ellipse(x, y, w, h float64) {
 		return path.End()
 	}
 
-	if p.cfg.color.fill != nil {
+	if fill := p.stk.cur().fill; fill != nil {
 		stk := op.Push(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
-			rgba(p.cfg.color.fill),
+			rgba(fill),
 			clip.Outline{
 				Path: path(p.ctx.Ops),
 			}.Op(),
@@ -60,14 +60,14 @@ func (p *Proc) Ellipse(x, y, w, h float64) {
 		stk.Pop()
 	}
 
-	if p.cfg.color.stroke != nil {
+	if stroke := p.stk.cur().stroke.color; stroke != nil {
 		stk := op.Push(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
-			rgba(p.cfg.color.stroke),
+			rgba(stroke),
 			clip.Stroke{
 				Path:  path(p.ctx.Ops),
-				Style: p.cfg.stroke,
+				Style: p.stk.cur().stroke.style,
 			}.Op(),
 		)
 		stk.Pop()
@@ -118,10 +118,10 @@ func (p *Proc) Arc(x, y, w, h float64, beg, end float64) {
 
 	paint.FillShape(
 		p.ctx.Ops,
-		rgba(p.cfg.color.stroke),
+		rgba(p.stk.cur().stroke.color),
 		clip.Stroke{
 			Path:  path.End(),
-			Style: p.cfg.stroke,
+			Style: p.stk.cur().stroke.style,
 		}.Op(),
 	)
 	stk.Pop()
@@ -145,10 +145,10 @@ func (p *Proc) Line(x1, y1, x2, y2 float64) {
 
 	paint.FillShape(
 		p.ctx.Ops,
-		rgba(p.cfg.color.stroke),
+		rgba(p.stk.cur().stroke.color),
 		clip.Stroke{
 			Path:  path.End(),
-			Style: p.cfg.stroke,
+			Style: p.stk.cur().stroke.style,
 		}.Op(),
 	)
 	stk.Pop()
@@ -209,10 +209,10 @@ func (p *Proc) Bezier(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 
 	paint.FillShape(
 		p.ctx.Ops,
-		rgba(p.cfg.color.stroke),
+		rgba(p.stk.cur().stroke.color),
 		clip.Stroke{
 			Path:  path.End(),
-			Style: p.cfg.stroke,
+			Style: p.stk.cur().stroke.style,
 		}.Op(),
 	)
 }
@@ -236,7 +236,7 @@ func (p *Proc) poly(ps ...f32.Point) {
 		stk := op.Push(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
-			rgba(p.cfg.color.fill),
+			rgba(p.stk.cur().fill),
 			clip.Outline{
 				Path: path(p.ctx.Ops),
 			}.Op(),
@@ -248,10 +248,10 @@ func (p *Proc) poly(ps ...f32.Point) {
 		stk := op.Push(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
-			rgba(p.cfg.color.stroke),
+			rgba(p.stk.cur().stroke.color),
 			clip.Stroke{
 				Path:  path(p.ctx.Ops),
-				Style: p.cfg.stroke,
+				Style: p.stk.cur().stroke.style,
 			}.Op(),
 		)
 		stk.Pop()

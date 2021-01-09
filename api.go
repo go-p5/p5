@@ -9,6 +9,16 @@ import (
 	"log"
 )
 
+// Push saves the current drawing style settings and transformations.
+func Push() {
+	gproc.Push()
+}
+
+// Pop restores the previous drawing style settings and transformations.
+func Pop() {
+	gproc.Pop()
+}
+
 // Canvas defines the dimensions of the painting area, in pixels.
 func Canvas(w, h int) {
 	gproc.Canvas(w, h)
