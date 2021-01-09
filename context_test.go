@@ -180,3 +180,43 @@ func TestShear(t *testing.T) {
 
 	proc.Run(t)
 }
+
+func TestMatrix(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+
+	proc := newTestGProc(t, w, h,
+		func(proc *Proc) {
+			Background(color.Gray{Y: 220})
+		},
+		func(proc *Proc) {
+
+			Fill(nil)
+			Stroke(color.Black)
+			Rect(100, 100, 20, 30)
+
+			{
+				Push()
+				sin, cos := math.Sincos(math.Pi / 6)
+				Stroke(color.RGBA{B: 255, A: 255})
+				Matrix(cos, sin, -sin, cos, 0, 0)
+				Rect(100, 100, 20, 30)
+				Pop()
+			}
+
+			{
+				Push()
+				sin, cos := math.Sincos(-math.Pi / 6)
+				Stroke(color.RGBA{R: 255, A: 255})
+				Matrix(cos, sin, -sin, cos, 0, 0)
+				Rect(100, 100, 20, 30)
+				Pop()
+			}
+		},
+		"testdata/matrix.png",
+	)
+
+	proc.Run(t)
+}

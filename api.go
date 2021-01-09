@@ -84,3 +84,8 @@ func Translate(x, y float64) {
 func Shear(x, y float64) {
 	gproc.Shear(x, y)
 }
+
+// Matrix sets the affine matrix transformation.
+func Matrix(a, b, c, d, e, f float64) {
+	gproc.Matrix(a, b, c, d, e, f)
+}

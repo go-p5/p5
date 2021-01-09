@@ -89,6 +89,10 @@ func (stk *stackOps) shear(x, y float64) {
 	op.Affine(aff).Add(ops)
 }
 
+func (stk *stackOps) matrix(aff f32.Affine2D) {
+	op.Affine(aff).Add(stk.ops)
+}
+
 // Push saves the current drawing style settings and transformations.
 func (p *Proc) Push() {
 	p.stk.push()
@@ -118,4 +122,12 @@ func (p *Proc) Translate(x, y float64) {
 // Shear shears the graphical context by the given x and y angles in radians.
 func (p *Proc) Shear(x, y float64) {
 	p.stk.shear(x, y)
+}
+
+// Matrix sets the affine matrix transformation.
+func (p *Proc) Matrix(a, b, c, d, e, f float64) {
+	p.stk.matrix(f32.NewAffine2D(
+		float32(a), float32(b), float32(c),
+		float32(d), float32(e), float32(f),
+	))
 }
