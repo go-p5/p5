@@ -79,3 +79,8 @@ func Scale(x, y float64) {
 func Translate(x, y float64) {
 	gproc.Translate(x, y)
 }
+
+// Shear shears the graphical context by the given x and y angles in radians.
+func Shear(x, y float64) {
+	gproc.Shear(x, y)
+}

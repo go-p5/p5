@@ -80,6 +80,15 @@ func (stk *stackOps) translate(x, y float64) {
 	op.Offset(f32.Pt(float32(x), float32(y))).Add(stk.ops)
 }
 
+func (stk *stackOps) shear(x, y float64) {
+	ops := stk.ops
+	aff := f32.Affine2D{}.Shear(
+		f32.Pt(0, 0),
+		float32(x), float32(y),
+	)
+	op.Affine(aff).Add(ops)
+}
+
 // Push saves the current drawing style settings and transformations.
 func (p *Proc) Push() {
 	p.stk.push()
@@ -104,4 +113,9 @@ func (p *Proc) Scale(x, y float64) {
 // Translate applies a translation by x and y.
 func (p *Proc) Translate(x, y float64) {
 	p.stk.translate(x, y)
+}
+
+// Shear shears the graphical context by the given x and y angles in radians.
+func (p *Proc) Shear(x, y float64) {
+	p.stk.shear(x, y)
 }

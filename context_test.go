@@ -142,3 +142,41 @@ func TestTranslate(t *testing.T) {
 
 	proc.Run(t)
 }
+
+func TestShear(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+
+	proc := newTestGProc(t, w, h,
+		func(proc *Proc) {
+			Background(color.Gray{Y: 220})
+		},
+		func(proc *Proc) {
+
+			Fill(nil)
+			Stroke(color.Black)
+			Rect(50, 50, 20, 30)
+
+			Push()
+			Fill(color.RGBA{B: 255, A: 255})
+			Stroke(color.RGBA{B: 255, A: 255})
+			Shear(math.Pi/4, 0)
+			Rect(50, 50, 20, 30)
+			Text("shear-x", 50, 70)
+			Pop()
+
+			Push()
+			Fill(color.RGBA{R: 255, A: 255})
+			Stroke(color.RGBA{R: 255, A: 255})
+			Shear(0, math.Pi/4)
+			Rect(50, 50, 20, 30)
+			Text("shear-y", 50, 70)
+			Pop()
+		},
+		"testdata/shear.png",
+	)
+
+	proc.Run(t)
+}
