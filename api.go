@@ -74,3 +74,8 @@ func Rotate(angle float64) {
 func Scale(x, y float64) {
 	gproc.Scale(x, y)
 }
+
+// Translate applies a translation by x and y.
+func Translate(x, y float64) {
+	gproc.Translate(x, y)
+}

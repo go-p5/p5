@@ -76,6 +76,10 @@ func (stk *stackOps) scale(x, y float64) {
 	op.Affine(aff).Add(ops)
 }
 
+func (stk *stackOps) translate(x, y float64) {
+	op.Offset(f32.Pt(float32(x), float32(y))).Add(stk.ops)
+}
+
 // Push saves the current drawing style settings and transformations.
 func (p *Proc) Push() {
 	p.stk.push()
@@ -95,4 +99,9 @@ func (p *Proc) Rotate(angle float64) {
 // Scale rescales the graphical context by x and y.
 func (p *Proc) Scale(x, y float64) {
 	p.stk.scale(x, y)
+}
+
+// Translate applies a translation by x and y.
+func (p *Proc) Translate(x, y float64) {
+	p.stk.translate(x, y)
 }

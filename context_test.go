@@ -115,3 +115,30 @@ func TestScale(t *testing.T) {
 
 	proc.Run(t)
 }
+
+func TestTranslate(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+
+	proc := newTestProc(t, w, h,
+		func(proc *Proc) {
+			proc.Background(color.Gray{Y: 220})
+		},
+		func(proc *Proc) {
+			proc.Fill(color.RGBA{B: 255, A: 128})
+			proc.Stroke(color.RGBA{B: 255, A: 128})
+
+			for i := 0; i < 50; i++ {
+				proc.Push()
+				proc.Translate(float64(i)*5, float64(i)*10)
+				proc.Rect(0, 0, 20, 30)
+				proc.Pop()
+			}
+		},
+		"testdata/translate.png",
+	)
+
+	proc.Run(t)
+}
