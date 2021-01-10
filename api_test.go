@@ -97,18 +97,15 @@ func TestRandom(t *testing.T) {
 		gproc = old
 	}()
 
-	// Use a specific seed to make tests deterministic
-	RandomSeed(100)
-
 	tests := []struct {
 		min  float64
 		max  float64
 		want float64
 	}{
-		{0, 5, 4.082513468898083},
-		{-5, -0, -0.19869552746956476},
-		{1, 4, 1.181324427195803},
-		{-4, -1, -3.0641855722578617},
+		{0, 5, 1.4393455630422243},
+		{-5, -0, -0.6158681223759013},
+		{1, 4, 3.3935187588071685},
+		{-4, -1, -3.0145149335211046},
 		{0, 0, 0},
 		{-1, -1, -1},
 		{1, 1, 1},
@@ -117,6 +114,31 @@ func TestRandom(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			if got := Random(tt.min, tt.max); got != tt.want {
 				t.Errorf("Random() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRandomGaussian(t *testing.T) {
+	old := gproc
+	defer func() {
+		gproc = old
+	}()
+
+	tests := []struct {
+		mean   float64
+		stdDev float64
+		want   float64
+	}{
+		{0, 1, 0.06817116484613528},
+		{0, 2, -1.317039245855091},
+		{1, 1, 0.8714616847016733},
+		{-1, 2, 0.20863494591954312},
+	}
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			if got := RandomGaussian(tt.mean, tt.stdDev); got != tt.want {
+				t.Errorf("RandomGaussian() = %v, want %v", got, tt.want)
 			}
 		})
 	}
