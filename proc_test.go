@@ -10,6 +10,7 @@ import (
 	"image/color"
 	"io/ioutil"
 	"math"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -111,6 +112,10 @@ func (p *testProc) Run(t *testing.T) {
 	}
 	if !ok {
 		t.Fatalf("%s: images compare different", p.fname)
+	}
+
+	if err := os.Remove(p.fname); err != nil {
+		t.Logf("could not delete image %s, err: %s", p.fname, err)
 	}
 }
 
