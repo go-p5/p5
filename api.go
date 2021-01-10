@@ -98,7 +98,7 @@ func RandomSeed(seed uint64) {
 // Random returns a pseudo-random number in [min,max).
 // Random will produce the same sequence of numbers every time the program runs.
 // Use RandomSeed with a seed that changes (like time.Now().UnixNano()) in order to
-// produce different sequence of numbers every time the program runs.
+// produce different sequence of numbers.
 func Random(min, max float64) float64 {
 	return gproc.Random(min, max)
 }

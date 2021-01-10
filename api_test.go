@@ -93,10 +93,8 @@ func TestBezier(t *testing.T) {
 }
 
 func TestRandom(t *testing.T) {
-	old := gproc
-	defer func() {
-		gproc = old
-	}()
+	proc := newProc(100, 100)
+	proc.RandomSeed(1)
 
 	tests := []struct {
 		min  float64
@@ -113,7 +111,7 @@ func TestRandom(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			if got := Random(tt.min, tt.max); got != tt.want {
+			if got := proc.Random(tt.min, tt.max); got != tt.want {
 				t.Errorf("Random() = %v, want %v", got, tt.want)
 			}
 		})
@@ -121,24 +119,22 @@ func TestRandom(t *testing.T) {
 }
 
 func TestRandomGaussian(t *testing.T) {
-	old := gproc
-	defer func() {
-		gproc = old
-	}()
+	proc := newProc(100, 100)
+	proc.RandomSeed(1)
 
 	tests := []struct {
 		mean   float64
 		stdDev float64
 		want   float64
 	}{
-		{0, 1, 0.06817116484613528},
-		{0, 2, -1.317039245855091},
-		{1, 1, 0.8714616847016733},
-		{-1, 2, 0.20863494591954312},
+		{0, 1, 0.594696832665853},
+		{0, 2, 0.11156098724802527},
+		{1, 1, 0.9043068613187665},
+		{-1, 2, -3.6908077437524214},
 	}
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			if got := RandomGaussian(tt.mean, tt.stdDev); got != tt.want {
+			if got := proc.RandomGaussian(tt.mean, tt.stdDev); got != tt.want {
 				t.Errorf("RandomGaussian() = %v, want %v", got, tt.want)
 			}
 		})
