@@ -392,7 +392,7 @@ func (p *Proc) RandomSeed(seed uint64) {
 // Random returns a pseudo-random number in [min,max).
 // Random will produce the same sequence of numbers every time the program runs.
 // Use RandomSeed with a seed that changes (like time.Now().UnixNano()) in order to
-// produce different sequence of numbers.
+// produce different sequences of numbers.
 func (p *Proc) Random(min, max float64) float64 {
 	return p.rand.Float64()*(max-min) + min
 }
