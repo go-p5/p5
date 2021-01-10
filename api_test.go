@@ -7,6 +7,7 @@ package p5
 import (
 	"image/color"
 	"math"
+	"reflect"
 	"testing"
 )
 
@@ -141,5 +142,43 @@ func TestRandomGaussian(t *testing.T) {
 				t.Errorf("RandomGaussian() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestRandomSeed(t *testing.T) {
+	// generatedSequences holds 3 different generated sequences of 5 numbers
+	generatedSequences := make([][]float64, 3)
+
+	p1 := newProc(100, 100)
+	// Generate the first sequence without calling RandomSeed
+	generatedSequences[0] = make([]float64, 5)
+	for x := 0; x < 5; x++ {
+		generatedSequences[0][x] = p1.Random(0, 1)
+	}
+
+	// Generate the second sequence after calling RandomSeed with default seed
+	p2 := newProc(100, 100)
+	p2.RandomSeed(defaultSeed)
+	generatedSequences[1] = make([]float64, 5)
+	for x := 0; x < 5; x++ {
+		generatedSequences[1][x] = p2.Random(0, 1)
+	}
+
+	// Generate the third sequence after calling RandomSeed with seed other than default seed
+	p3 := newProc(100, 100)
+	p3.RandomSeed(defaultSeed + 1)
+	generatedSequences[2] = make([]float64, 5)
+	for x := 0; x < 5; x++ {
+		generatedSequences[2][x] = p3.Random(0, 1)
+	}
+
+	// generatedSequences[0] and generatedSequences[1] should be the same
+	if !reflect.DeepEqual(generatedSequences[0], generatedSequences[1]) {
+		t.Logf("%v %v", generatedSequences[0], generatedSequences[1])
+		t.Errorf("Not calling RandomSeed and calling RandomSeed with the default seed, should produce the same sequence of numbers")
+	}
+	// generatedSequences[1] and generatedSequences[2] should be different
+	if reflect.DeepEqual(generatedSequences[1], generatedSequences[2]) {
+		t.Errorf("Calling RandomSeed with different seeds should produce different sequence of numbers")
 	}
 }

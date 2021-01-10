@@ -42,6 +42,8 @@ const (
 	defaultHeight = 400
 
 	defaultFrameRate = 15 * time.Millisecond
+
+	defaultSeed = 1
 )
 
 var (
@@ -86,7 +88,7 @@ type Proc struct {
 
 func newProc(w, h int) *Proc {
 	proc := &Proc{
-		rand: rand.New(rand.NewSource(1)),
+		rand: rand.New(rand.NewSource(defaultSeed)),
 		ctx: layout.Context{
 			Ops: new(op.Ops),
 			Constraints: layout.Constraints{
