@@ -397,7 +397,8 @@ func (p *Proc) Random(min, max float64) float64 {
 	return p.rand.Float64()*(max-min) + min
 }
 
-// RandomGaussian returns a random number fitting a Gaussian (normal) distribution.
+// RandomGaussian returns a random number following a Gaussian distribution with the provided
+// mean and standard deviation.
 func (p *Proc) RandomGaussian(mean, stdDev float64) float64 {
 	return p.rand.NormFloat64()*stdDev + mean
 }
