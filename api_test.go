@@ -90,3 +90,34 @@ func TestBezier(t *testing.T) {
 	gproc = proc.Proc
 	proc.Run(t)
 }
+
+func TestRandom(t *testing.T) {
+	old := gproc
+	defer func() {
+		gproc = old
+	}()
+
+	// Use a specific seed to make tests deterministic
+	RandomSeed(100)
+
+	tests := []struct {
+		min  float64
+		max  float64
+		want float64
+	}{
+		{0, 5, 4.082513468898083},
+		{-5, -0, -0.19869552746956476},
+		{1, 4, 1.181324427195803},
+		{-4, -1, -3.0641855722578617},
+		{0, 0, 0},
+		{-1, -1, -1},
+		{1, 1, 1},
+	}
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			if got := Random(tt.min, tt.max); got != tt.want {
+				t.Errorf("Random() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
