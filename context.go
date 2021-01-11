@@ -33,6 +33,8 @@ type context struct {
 	stroke strokeStyle
 	text   textStyle
 
+	tau float32 // Catmull-Rom tension, used for Curve.
+
 	stk op.StackOp
 }
 

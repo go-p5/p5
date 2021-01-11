@@ -52,3 +52,19 @@ func Triangle(x1, y1, x2, y2, x3, y3 float64) {
 func Bezier(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 	gproc.Bezier(x1, y1, x2, y2, x3, y3, x4, y4)
 }
+
+// Curve draws a curved line starting at (x2,y2) and ending at (x3,y3).
+// (x1,y1) and (x4,y4) are the control points.
+//
+// Curve is an implementation of Catmull-Rom splines.
+func Curve(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
+	gproc.Curve(x1, y1, x2, y2, x3, y3, x4, y4)
+}
+
+// CurveTightness determines how the curve fits to the Curve vertex points.
+// CurveTightness controls the Catmull-Rom tau tension.
+//
+// The default value is 0.
+func CurveTightness(v float64) {
+	gproc.CurveTightness(v)
+}

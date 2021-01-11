@@ -92,6 +92,92 @@ func TestBezier(t *testing.T) {
 	proc.Run(t)
 }
 
+func TestCurve(t *testing.T) {
+	const (
+		w = 400
+		h = 400
+	)
+	proc := newTestGProc(t, w, h,
+		func(*Proc) {
+			Background(color.Gray{Y: 220})
+		},
+		func(*Proc) {
+			CurveTightness(0)
+			Stroke(color.RGBA{R: 255, A: 255})
+			Curve(5, 26, 5, 26, 73, 24, 73, 61)
+
+			Push()
+			Stroke(color.Black)
+			Curve(5, 26, 73, 24, 73, 61, 15, 65)
+			Pop()
+
+			Curve(73, 24, 73, 61, 15, 65, 15, 65)
+			Text("tau=0", 10, 50)
+
+			{
+				Push()
+				Translate(100, 100)
+				CurveTightness(1)
+				Stroke(color.RGBA{R: 255, A: 255})
+				Curve(5, 26, 5, 26, 73, 24, 73, 61)
+
+				Push()
+				{
+					Stroke(color.Black)
+					Curve(5, 26, 73, 24, 73, 61, 15, 65)
+				}
+				Pop()
+
+				Curve(73, 24, 73, 61, 15, 65, 15, 65)
+				Text("tau=+1", 10, 50)
+
+				Pop()
+			}
+
+			{
+				Push()
+				Translate(200, 200)
+				CurveTightness(-2)
+				Stroke(color.RGBA{R: 255, A: 255})
+				Curve(5, 26, 5, 26, 73, 24, 73, 61)
+
+				Push()
+				{
+					Stroke(color.Black)
+					Curve(5, 26, 73, 24, 73, 61, 15, 65)
+				}
+				Pop()
+
+				Curve(73, 24, 73, 61, 15, 65, 15, 65)
+				Text("tau=-2", 10, 50)
+
+				Pop()
+			}
+			{
+				Push()
+				Translate(300, 300)
+				CurveTightness(+2)
+				Stroke(color.RGBA{R: 255, A: 255})
+				Curve(5, 26, 5, 26, 73, 24, 73, 61)
+
+				Push()
+				{
+					Stroke(color.Black)
+					Curve(5, 26, 73, 24, 73, 61, 15, 65)
+				}
+				Pop()
+
+				Curve(73, 24, 73, 61, 15, 65, 15, 65)
+				Text("tau=+2", 10, 50)
+
+				Pop()
+			}
+		},
+		"testdata/api_shapes_curve.png",
+	)
+	proc.Run(t)
+}
+
 func TestRandom(t *testing.T) {
 	proc := newProc(100, 100)
 	proc.RandomSeed(1)

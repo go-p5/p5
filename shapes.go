@@ -217,6 +217,70 @@ func (p *Proc) Bezier(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 	)
 }
 
+// Curve draws a curved line starting at (x2,y2) and ending at (x3,y3).
+// (x1,y1) and (x4,y4) are the control points.
+//
+// Curve is an implementation of Catmull-Rom splines.
+func (p *Proc) Curve(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
+	// Convert the Catmull-Rom curve into a cubic Bézier curve according to
+	//
+	//  "Conversion Between Bézier and Catmull-Rom Splines"
+	//  S. Arasteh and A. Kalisz
+	//
+	// An electronic version is available at:
+	//  https://arxiv.org/pdf/2011.08232.pdf
+
+	tau := p.stk.cur().tau
+	if tau == 1 {
+		p.Line(x2, y2, x3, y3)
+		return
+	}
+
+	var (
+		cr1 = p.pt(x1, y1)
+		cr2 = p.pt(x2, y2)
+		cr3 = p.pt(x3, y3)
+		cr4 = p.pt(x4, y4)
+
+		itau = 1 / (6 * (1 - tau))
+
+		p1 = cr2
+		p2 = cr2.Add(cr3.Sub(cr1).Mul(itau))
+		p3 = cr3.Sub(cr4.Sub(cr2).Mul(itau))
+		p4 = cr3
+
+		path clip.Path
+
+		sp  = p1
+		cp0 = p2.Sub(sp)
+		cp1 = p3.Sub(sp)
+		ep  = p4.Sub(sp)
+	)
+
+	defer op.Push(p.ctx.Ops).Pop()
+
+	path.Begin(p.ctx.Ops)
+	path.Move(sp)
+	path.Cube(cp0, cp1, ep)
+
+	paint.FillShape(
+		p.ctx.Ops,
+		rgba(p.stk.cur().stroke.color),
+		clip.Stroke{
+			Path:  path.End(),
+			Style: p.stk.cur().stroke.style,
+		}.Op(),
+	)
+}
+
+// CurveTightness determines how the curve fits to the Curve vertex points.
+// CurveTightness controls the Catmull-Rom tau tension.
+//
+// The default value is 0.
+func (p *Proc) CurveTightness(v float64) {
+	p.stk.cur().tau = float32(v)
+}
+
 func (p *Proc) poly(ps ...f32.Point) {
 	if !p.doFill() && !p.doStroke() {
 		return
