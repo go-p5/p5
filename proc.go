@@ -13,7 +13,6 @@ import (
 	"image/png"
 	"io"
 	"log"
-	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -72,10 +71,15 @@ type Proc struct {
 		loop bool
 	}
 	cfg struct {
-		x   r1.Interval
-		y   r1.Interval
-		trX func(v float64) float64 // translate from user- to system coords
-		trY func(v float64) float64 // translate from user- to system coords
+		w int
+		h int
+
+		x    r1.Interval
+		y    r1.Interval
+		u2sX func(v float64) float64 // translate from user- to system coords
+		u2sY func(v float64) float64 // translate from user- to system coords
+		s2uX func(v float64) float64 // translate from system- to user coords
+		s2uY func(v float64) float64 // translate from system- to user coords
 
 		th *material.Theme
 	}
@@ -108,7 +112,7 @@ func newProc(w, h int) *Proc {
 }
 
 func (p *Proc) initCanvas(w, h int) {
-	p.initCanvasDim(w, h)
+	p.initCanvasDim(w, h, 0, float64(w), 0, float64(h))
 	p.stk.cur().bkg = defaultBkgColor
 	p.stk.cur().fill = defaultFillColor
 	p.stk.cur().stroke.color = defaultStrokeColor
@@ -118,21 +122,40 @@ func (p *Proc) initCanvas(w, h int) {
 	p.stk.cur().text.size = defaultTextSize
 }
 
-func (p *Proc) initCanvasDim(w, h int) {
-	p.cfg.x = r1.Interval{Min: 0, Max: float64(w)}
-	p.cfg.y = r1.Interval{Min: 0, Max: float64(h)}
-	p.cfg.trX = func(v float64) float64 {
-		return (v - p.cfg.x.Min) / (p.cfg.x.Max - p.cfg.x.Min) * float64(w)
+func (p *Proc) initCanvasDim(w, h int, xmin, xmax, ymin, ymax float64) {
+	p.cfg.w = w
+	p.cfg.h = h
+	p.cfg.x = r1.Interval{Min: xmin, Max: xmax}
+	p.cfg.y = r1.Interval{Min: ymin, Max: ymax}
+
+	var (
+		wdx = 1 / (p.cfg.x.Max - p.cfg.x.Min) * float64(w)
+		hdy = 1 / (p.cfg.y.Max - p.cfg.y.Min) * float64(h)
+
+		dx = 1 / wdx
+		dy = 1 / hdy
+	)
+
+	p.cfg.u2sX = func(v float64) float64 {
+		return (v - p.cfg.x.Min) * wdx
 	}
 
-	p.cfg.trY = func(v float64) float64 {
-		return (v - p.cfg.y.Min) / (p.cfg.y.Max - p.cfg.y.Min) * float64(h)
+	p.cfg.s2uX = func(v float64) float64 {
+		return (v * dx) + p.cfg.x.Min
+	}
+
+	p.cfg.u2sY = func(v float64) float64 {
+		return (v - p.cfg.y.Min) * hdy
+	}
+
+	p.cfg.s2uY = func(v float64) float64 {
+		return (v * dy) + p.cfg.y.Min
 	}
 }
 
 func (p *Proc) cnvSize() (w, h float64) {
-	w = math.Abs(p.cfg.x.Max - p.cfg.x.Min)
-	h = math.Abs(p.cfg.y.Max - p.cfg.y.Min)
+	w = float64(p.cfg.w)
+	h = float64(p.cfg.h)
 	return w, h
 }
 
@@ -153,15 +176,16 @@ func (p *Proc) run() error {
 	p.Setup()
 
 	var (
-		err           error
-		width, height = p.cnvSize()
+		err    error
+		width  = p.cfg.w
+		height = p.cfg.h
 	)
 
 	w := app.NewWindow(app.Title("p5"), app.Size(
 		unit.Px(float32(width)),
 		unit.Px(float32(height)),
 	))
-	p.head, err = headless.NewWindow(int(width), int(height))
+	p.head, err = headless.NewWindow(width, height)
 	if err != nil {
 		return fmt.Errorf("p5: could not create headless window: %w", err)
 	}
@@ -207,8 +231,8 @@ func (p *Proc) run() error {
 				Event.Mouse.Pressed = false
 			case pointer.Move:
 				Event.Mouse.PrevPosition = Event.Mouse.Position
-				Event.Mouse.Position.X = float64(e.Position.X)
-				Event.Mouse.Position.Y = float64(e.Position.Y)
+				Event.Mouse.Position.X = p.cfg.s2uX(float64(e.Position.X))
+				Event.Mouse.Position.Y = p.cfg.s2uY(float64(e.Position.Y))
 			}
 			Event.Mouse.Buttons = Buttons(e.Buttons)
 
@@ -252,8 +276,8 @@ func (p *Proc) draw(e system.FrameEvent) {
 
 func (p *Proc) pt(x, y float64) f32.Point {
 	return f32.Point{
-		X: float32(p.cfg.trX(x)),
-		Y: float32(p.cfg.trY(y)),
+		X: float32(p.cfg.u2sX(x)),
+		Y: float32(p.cfg.u2sY(y)),
 	}
 }
 
@@ -264,7 +288,13 @@ func rgba(c color.Color) color.NRGBA {
 
 // Canvas defines the dimensions of the painting area, in pixels.
 func (p *Proc) Canvas(w, h int) {
-	p.initCanvasDim(w, h)
+	p.initCanvasDim(w, h, 0, float64(w), 0, float64(h))
+}
+
+// PhysCanvas sets the dimensions of the painting area, in pixels, and
+// associates physical quantities.
+func (p *Proc) PhysCanvas(w, h int, xmin, xmax, ymin, ymax float64) {
+	p.initCanvasDim(w, h, xmin, xmax, ymin, ymax)
 }
 
 // Background defines the background color for the painting area.
@@ -313,8 +343,8 @@ func (p *Proc) TextSize(size float64) {
 
 // Text draws txt on the screen at (x,y).
 func (p *Proc) Text(txt string, x, y float64) {
-	x = p.cfg.trX(x)
-	y = p.cfg.trY(y)
+	x = p.cfg.u2sX(x)
+	y = p.cfg.u2sY(y)
 
 	var (
 		offset = x

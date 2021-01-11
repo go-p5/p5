@@ -11,6 +11,69 @@ import (
 	"testing"
 )
 
+func TestPhysCanvas(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+	proc := newTestGProc(t, w, h,
+		func(*Proc) {
+			PhysCanvas(400, 200, -20, +20, -10, +10)
+			Background(color.Gray{Y: 220})
+		},
+		func(p *Proc) {
+			StrokeWidth(2)
+			Fill(color.RGBA{R: 255, A: 208})
+			Ellipse(0, 0, 20, 10)
+
+			for _, tc := range []struct {
+				usr, sys float64
+			}{
+				{-20, 0},
+				{0, 200},
+				{+20, 400},
+			} {
+				if got, want := p.cfg.u2sX(tc.usr), tc.sys; got != want {
+					t.Errorf(
+						"invalid usr->sys X-conversion: got=%v, want=%v",
+						got, want,
+					)
+				}
+				if got, want := p.cfg.s2uX(tc.sys), tc.usr; got != want {
+					t.Errorf(
+						"invalid sys->usr X-conversion: got=%v, want=%v",
+						got, want,
+					)
+				}
+			}
+
+			for _, tc := range []struct {
+				usr, sys float64
+			}{
+				{-10, 0},
+				{0, 100},
+				{+10, 200},
+			} {
+				if got, want := p.cfg.u2sY(tc.usr), tc.sys; got != want {
+					t.Errorf(
+						"invalid usr->sys Y-conversion: got=%v, want=%v",
+						got, want,
+					)
+				}
+				if got, want := p.cfg.s2uY(tc.sys), tc.usr; got != want {
+					t.Errorf(
+						"invalid sys->usr Y-conversion: got=%v, want=%v",
+						got, want,
+					)
+				}
+			}
+
+		},
+		"testdata/canvas.png",
+	)
+	proc.Run(t)
+}
+
 func TestAPIShapes(t *testing.T) {
 	old := gproc
 	defer func() {

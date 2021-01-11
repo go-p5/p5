@@ -89,8 +89,8 @@ func (p *Proc) Arc(x, y, w, h float64, beg, end float64) {
 
 	var (
 		c  = p.pt(x, y)
-		a  = p.cfg.trX(w)
-		b  = p.cfg.trY(h)
+		a  = p.cfg.u2sX(w)
+		b  = p.cfg.u2sY(h)
 		f1 f32.Point
 		f2 f32.Point
 	)

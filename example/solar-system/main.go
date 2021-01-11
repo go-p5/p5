@@ -22,7 +22,7 @@ const (
 )
 
 func setup() {
-	p5.Canvas(width, height)
+	p5.PhysCanvas(width, height, xmin, xmax, ymin, ymax)
 	p5.Background(color.Black)
 }
 
@@ -122,10 +122,6 @@ const (
 	ymax = +1.3e12
 )
 
-func tr(x, xmin, xmax float64) float64 {
-	return (x - xmin) / (xmax - xmin) * width
-}
-
 func NewNBody(name string, mass float64, pos, vel, acc r2.Vec, c color.Color) NBody {
 	return NBody{
 		mass: mass,
@@ -168,10 +164,10 @@ func (p *NBody) updateAcc(dt float64, ps []NBody) {
 }
 
 func (p *NBody) draw() {
-	r := 12.0
+	r := 12.0 * 1e9
 
 	if p.name != "Sun" {
-		r = 6
+		r = 6 * 1e9
 
 		// draw orbits
 		p.path = append(p.path, p.pos)
@@ -183,17 +179,13 @@ func (p *NBody) draw() {
 			pi := p.path[i]
 			pj := p.path[i+1]
 
-			pix := tr(pi.X, xmin, xmax)
-			piy := tr(pi.Y, ymin, ymax)
-			pjx := tr(pj.X, xmin, xmax)
-			pjy := tr(pj.Y, ymin, ymax)
 			p5.Stroke(p.c)
-			p5.Line(pix, piy, pjx, pjy)
+			p5.Line(pi.X, pi.Y, pj.X, pj.Y)
 		}
 	}
 
-	px := tr(p.pos.X, xmin, xmax)
-	py := tr(p.pos.Y, ymin, ymax)
+	px := p.pos.X
+	py := p.pos.Y
 
 	p5.Fill(p.c)
 	p5.Ellipse(px, py, r, r)

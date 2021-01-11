@@ -24,6 +24,12 @@ func Canvas(w, h int) {
 	gproc.Canvas(w, h)
 }
 
+// PhysCanvas sets the dimensions of the painting area, in pixels, and
+// associates physical quantities.
+func PhysCanvas(w, h int, xmin, xmax, ymin, ymax float64) {
+	gproc.PhysCanvas(w, h, xmin, xmax, ymin, ymax)
+}
+
 // Background defines the background color for the painting area.
 // The default color is transparent.
 func Background(c color.Color) {
