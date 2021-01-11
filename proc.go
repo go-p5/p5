@@ -69,6 +69,8 @@ type Proc struct {
 		mu   sync.RWMutex
 		run  bool
 		loop bool
+
+		frameCount int64
 	}
 	cfg struct {
 		w int
@@ -262,6 +264,19 @@ func (p *Proc) loop() bool {
 	return p.ctl.loop
 }
 
+func (p *Proc) incFrameCount() {
+	p.ctl.mu.Lock()
+	defer p.ctl.mu.Unlock()
+	p.ctl.frameCount++
+}
+
+// FrameCount returns the number of frames that have been displayed since the program started.
+func (p *Proc) FrameCount() int64 {
+	p.ctl.mu.RLock()
+	defer p.ctl.mu.RUnlock()
+	return p.ctl.frameCount
+}
+
 func (p *Proc) draw(e system.FrameEvent) {
 	p.ctx = layout.NewContext(p.ctx.Ops, e)
 
@@ -270,7 +285,7 @@ func (p *Proc) draw(e system.FrameEvent) {
 	paint.Fill(ops, clr)
 
 	p.Draw()
-
+	p.incFrameCount()
 	e.Frame(ops)
 }
 
