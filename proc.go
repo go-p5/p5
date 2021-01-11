@@ -108,6 +108,17 @@ func newProc(w, h int) *Proc {
 }
 
 func (p *Proc) initCanvas(w, h int) {
+	p.initCanvasDim(w, h)
+	p.stk.cur().bkg = defaultBkgColor
+	p.stk.cur().fill = defaultFillColor
+	p.stk.cur().stroke.color = defaultStrokeColor
+
+	p.stk.cur().text.color = defaultTextColor
+	p.stk.cur().text.align = text.Start
+	p.stk.cur().text.size = defaultTextSize
+}
+
+func (p *Proc) initCanvasDim(w, h int) {
 	p.cfg.x = r1.Interval{Min: 0, Max: float64(w)}
 	p.cfg.y = r1.Interval{Min: 0, Max: float64(h)}
 	p.cfg.trX = func(v float64) float64 {
@@ -117,13 +128,6 @@ func (p *Proc) initCanvas(w, h int) {
 	p.cfg.trY = func(v float64) float64 {
 		return (v - p.cfg.y.Min) / (p.cfg.y.Max - p.cfg.y.Min) * float64(h)
 	}
-	p.stk.cur().bkg = defaultBkgColor
-	p.stk.cur().fill = defaultFillColor
-	p.stk.cur().stroke.color = defaultStrokeColor
-
-	p.stk.cur().text.color = defaultTextColor
-	p.stk.cur().text.align = text.Start
-	p.stk.cur().text.size = defaultTextSize
 }
 
 func (p *Proc) cnvSize() (w, h float64) {
@@ -260,7 +264,7 @@ func rgba(c color.Color) color.NRGBA {
 
 // Canvas defines the dimensions of the painting area, in pixels.
 func (p *Proc) Canvas(w, h int) {
-	p.initCanvas(w, h)
+	p.initCanvasDim(w, h)
 }
 
 // Background defines the background color for the painting area.
