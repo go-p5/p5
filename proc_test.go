@@ -80,45 +80,50 @@ func (p *testProc) Run(t *testing.T) {
 		Frame: func(ops *op.Ops) {},
 	})
 
-	// if fname is empty, do not proceed with image generation and comparison with golden files
-	if p.fname != "" {
-		err = p.Proc.Screenshot(p.fname)
+	p.screenshot(t)
+}
+
+func (p *testProc) screenshot(t *testing.T) {
+	if p.fname == "" {
+		return
+	}
+
+	err := p.Proc.Screenshot(p.fname)
+	if err != nil {
+		t.Fatalf("could not take screenshot: %+v", err)
+	}
+
+	fname := p.fname
+	got, err := ioutil.ReadFile(fname)
+	if err != nil {
+		t.Fatalf("could not read back screenshot: %+v", err)
+	}
+
+	ext := filepath.Ext(fname)
+	fname = fname[:len(fname)-len(ext)] + "_golden" + ext
+
+	if *GenerateTestData {
+		err = ioutil.WriteFile(fname, got, 0644)
 		if err != nil {
-			t.Fatalf("could not take screenshot: %+v", err)
+			t.Fatalf("could not regen reference file %q: %+v", fname, err)
 		}
+	}
 
-		fname := p.fname
-		got, err := ioutil.ReadFile(fname)
-		if err != nil {
-			t.Fatalf("could not read back screenshot: %+v", err)
-		}
+	want, err := ioutil.ReadFile(fname)
+	if err != nil {
+		t.Fatalf("could not read back golden: %+v", err)
+	}
 
-		ext := filepath.Ext(fname)
-		fname = fname[:len(fname)-len(ext)] + "_golden" + ext
+	ok, err := cmpimg.EqualApprox(ext[1:], got, want, 0.1)
+	if err != nil {
+		t.Fatalf("%s: could not compare images: %+v", p.fname, err)
+	}
+	if !ok {
+		t.Fatalf("%s: images compare different", p.fname)
+	}
 
-		if *GenerateTestData {
-			err = ioutil.WriteFile(fname, got, 0644)
-			if err != nil {
-				t.Fatalf("could not regen reference file %q: %+v", fname, err)
-			}
-		}
-
-		want, err := ioutil.ReadFile(fname)
-		if err != nil {
-			t.Fatalf("could not read back golden: %+v", err)
-		}
-
-		ok, err := cmpimg.EqualApprox(ext[1:], got, want, 0.1)
-		if err != nil {
-			t.Fatalf("%s: could not compare images: %+v", p.fname, err)
-		}
-		if !ok {
-			t.Fatalf("%s: images compare different", p.fname)
-		}
-
-		if err := os.Remove(p.fname); err != nil {
-			t.Logf("could not delete image %s, err: %s", p.fname, err)
-		}
+	if err := os.Remove(p.fname); err != nil {
+		t.Logf("could not delete image %s, err: %s", p.fname, err)
 	}
 }
 
@@ -177,20 +182,4 @@ func TestHelloWorld(t *testing.T) {
 		"testdata/hello.png",
 	)
 	proc.Run(t)
-}
-
-func TestFrameCount(t *testing.T) {
-	proc := newTestProc(t, defaultWidth, defaultHeight,
-		func(proc *Proc) {},
-		func(proc *Proc) {},
-		"",
-	)
-	if fc := proc.FrameCount(); fc != 0 {
-		t.Errorf("initial frame count should be 0, got %d", fc)
-	}
-
-	proc.Run(t)
-	if fc := proc.FrameCount(); fc != 1 {
-		t.Errorf("frame count after a single draw should be 1, got %d", fc)
-	}
 }
