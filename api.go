@@ -115,6 +115,6 @@ func RandomGaussian(mean, stdDev float64) float64 {
 }
 
 // FrameCount returns the number of frames that have been displayed since the program started.
-func FrameCount() int64 {
+func FrameCount() uint64 {
 	return gproc.FrameCount()
 }

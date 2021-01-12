@@ -66,11 +66,10 @@ type Proc struct {
 	ctl struct {
 		FrameRate time.Duration
 
-		mu   sync.RWMutex
-		run  bool
-		loop bool
-
-		frameCount int64
+		mu      sync.RWMutex
+		run     bool
+		loop    bool
+		nframes uint64
 	}
 	cfg struct {
 		w int
@@ -267,14 +266,14 @@ func (p *Proc) loop() bool {
 func (p *Proc) incFrameCount() {
 	p.ctl.mu.Lock()
 	defer p.ctl.mu.Unlock()
-	p.ctl.frameCount++
+	p.ctl.nframes++
 }
 
 // FrameCount returns the number of frames that have been displayed since the program started.
-func (p *Proc) FrameCount() int64 {
+func (p *Proc) FrameCount() uint64 {
 	p.ctl.mu.RLock()
 	defer p.ctl.mu.RUnlock()
-	return p.ctl.frameCount
+	return p.ctl.nframes
 }
 
 func (p *Proc) draw(e system.FrameEvent) {
