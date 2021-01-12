@@ -183,3 +183,19 @@ func TestHelloWorld(t *testing.T) {
 	)
 	proc.Run(t)
 }
+
+func TestFrameCount(t *testing.T) {
+	proc := newTestProc(t, defaultWidth, defaultHeight,
+		func(proc *Proc) {},
+		func(proc *Proc) {},
+		"",
+	)
+	if fc := proc.FrameCount(); fc != 0 {
+		t.Errorf("initial frame count should be 0, got %d", fc)
+	}
+
+	proc.Run(t)
+	if fc := proc.FrameCount(); fc != 1 {
+		t.Errorf("frame count after a single draw should be 1, got %d", fc)
+	}
+}
