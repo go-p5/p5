@@ -14,13 +14,48 @@ import (
 	"path/filepath"
 	"testing"
 
+	"gioui.org/app"
 	"gioui.org/app/headless"
+	"gioui.org/io/event"
 	"gioui.org/io/system"
 	"gioui.org/op"
 	"github.com/go-p5/p5/internal/cmpimg"
 )
 
 var GenerateTestData = flag.Bool("regen", false, "Uses the current state to regenerate the test data.")
+
+// testAppWindowFunc returns a function that creates Test App.Window
+var testAppWindowFunc = func(opts ...app.Option) appWindow {
+	return newTestGioWindow(opts...)
+}
+
+// testAppWindow implements the appWindow interface and its purpose is to be used
+// in tests
+type testAppWindow struct {
+	out     chan event.Event
+	options []app.Option
+}
+
+func newTestGioWindow(opts ...app.Option) *testAppWindow {
+	return &testAppWindow{
+		out:     make(chan event.Event),
+		options: opts,
+	}
+}
+
+func (t *testAppWindow) Events() <-chan event.Event {
+	return t.out
+}
+
+func (t *testAppWindow) Invalidate() {
+	t.out <- system.FrameEvent{
+		Frame: func(ops *op.Ops) {},
+	}
+}
+
+func (t *testAppWindow) Close() {
+	t.out <- system.DestroyEvent{}
+}
 
 type testProc struct {
 	*Proc
@@ -38,7 +73,7 @@ func newTestGProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname strin
 func newTestProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname string) *testProc {
 	t.Helper()
 
-	p := newProc(w, h)
+	p := newProc(w, h, testAppWindowFunc)
 	p.Setup = func() { setup(p) }
 	p.Draw = func() { draw(p) }
 

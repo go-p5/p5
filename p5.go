@@ -35,7 +35,7 @@ package p5 // import "github.com/go-p5/p5"
 
 var (
 	// gproc is the global Proc instance used by the p5js-like API.
-	gproc = newProc(defaultWidth, defaultHeight)
+	gproc = newProc(defaultWidth, defaultHeight, gioAppWindowFunc)
 )
 
 // Run executes the user functions setup and draw.

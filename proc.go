@@ -55,6 +55,21 @@ var (
 	defaultTextSize  = float32(12)
 )
 
+type appWindow interface {
+	// Events returns the channel where events are delivered.
+	Events() <-chan event.Event
+	// Invalidates the window such that a FrameEvent will be generated immediately.
+	Invalidate()
+	// Close the window. The window's event loop should exit when it receives
+	// system.DestroyEvent.
+	Close()
+}
+
+// gioAppWindowFunc returns a function that creates Gio App.Window
+var gioAppWindowFunc = func(opts ...app.Option) appWindow {
+	return app.NewWindow(opts...)
+}
+
 // Proc is a p5 processor.
 //
 // Proc runs the bound Setup function once before the event loop.
@@ -85,16 +100,15 @@ type Proc struct {
 		th *material.Theme
 	}
 
-	ctx  layout.Context
-	stk  *stackOps
-	head *headless.Window
-	rand *rand.Rand
-	// event channel for sending window events and control the execution.
-	// useful for testing purposes
-	events chan event.Event
+	ctx       layout.Context
+	stk       *stackOps
+	head      *headless.Window
+	rand      *rand.Rand
+	newWindow func(opts ...app.Option) appWindow
+	window    appWindow
 }
 
-func newProc(w, h int) *Proc {
+func newProc(w, h int, appWindowFunc func(opts ...app.Option) appWindow) *Proc {
 	proc := &Proc{
 		rand: rand.New(rand.NewSource(defaultSeed)),
 		ctx: layout.Context{
@@ -111,7 +125,9 @@ func newProc(w, h int) *Proc {
 
 	proc.cfg.th = material.NewTheme(gofont.Collection())
 	proc.stk.cur().stroke.style.Width = 2
-	proc.events = make(chan event.Event)
+
+	proc.newWindow = appWindowFunc
+
 	return proc
 }
 
@@ -185,7 +201,7 @@ func (p *Proc) run() error {
 		height = p.cfg.h
 	)
 
-	w := app.NewWindow(app.Title("p5"), app.Size(
+	p.window = p.newWindow(app.Title("p5"), app.Size(
 		unit.Px(float32(width)),
 		unit.Px(float32(height)),
 	))
@@ -203,19 +219,14 @@ func (p *Proc) run() error {
 		tck := time.NewTicker(p.ctl.FrameRate)
 		defer tck.Stop()
 		for range tck.C {
-			w.Invalidate()
+			p.window.Invalidate()
 		}
 	}()
 
 	var cnt int
 
-	var e event.Event
 	for {
-		select {
-		case e = <-w.Events():
-		case e = <-p.events:
-		}
-
+		e := <-p.window.Events()
 		switch e := e.(type) {
 		case system.DestroyEvent:
 			return e.Err
@@ -223,7 +234,7 @@ func (p *Proc) run() error {
 		case key.Event:
 			switch e.Name {
 			case key.NameEscape:
-				w.Close()
+				p.window.Close()
 			case "F11":
 				fname := fmt.Sprintf("out-%03d.png", cnt)
 				err = p.Screenshot(fname)
@@ -252,16 +263,6 @@ func (p *Proc) run() error {
 			}
 		}
 	}
-}
-
-// shutdown will stop the execution of the running program
-func (p *Proc) shutdown() {
-	p.sendEvent(system.DestroyEvent{})
-	close(p.events)
-}
-
-func (p *Proc) sendEvent(e event.Event) {
-	p.events <- e
 }
 
 func (p *Proc) setupUserFuncs() {

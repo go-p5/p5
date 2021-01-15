@@ -245,7 +245,7 @@ func TestCurve(t *testing.T) {
 }
 
 func TestRandom(t *testing.T) {
-	proc := newProc(100, 100)
+	proc := newProc(100, 100, testAppWindowFunc)
 	proc.RandomSeed(1)
 
 	tests := []struct {
@@ -271,7 +271,7 @@ func TestRandom(t *testing.T) {
 }
 
 func TestRandomGaussian(t *testing.T) {
-	proc := newProc(100, 100)
+	proc := newProc(100, 100, testAppWindowFunc)
 	proc.RandomSeed(1)
 
 	tests := []struct {
@@ -297,7 +297,7 @@ func TestRandomSeed(t *testing.T) {
 	// generatedSequences holds 3 different generated sequences of 5 numbers
 	generatedSequences := make([][]float64, 3)
 
-	p1 := newProc(100, 100)
+	p1 := newProc(100, 100, testAppWindowFunc)
 	// Generate the first sequence without calling RandomSeed
 	generatedSequences[0] = make([]float64, 5)
 	for x := 0; x < 5; x++ {
@@ -305,7 +305,7 @@ func TestRandomSeed(t *testing.T) {
 	}
 
 	// Generate the second sequence after calling RandomSeed with default seed
-	p2 := newProc(100, 100)
+	p2 := newProc(100, 100, testAppWindowFunc)
 	p2.RandomSeed(defaultSeed)
 	generatedSequences[1] = make([]float64, 5)
 	for x := 0; x < 5; x++ {
@@ -313,7 +313,7 @@ func TestRandomSeed(t *testing.T) {
 	}
 
 	// Generate the third sequence after calling RandomSeed with seed other than default seed
-	p3 := newProc(100, 100)
+	p3 := newProc(100, 100, testAppWindowFunc)
 	p3.RandomSeed(defaultSeed + 1)
 	generatedSequences[2] = make([]float64, 5)
 	for x := 0; x < 5; x++ {
@@ -332,7 +332,7 @@ func TestRandomSeed(t *testing.T) {
 }
 
 func TestProc(t *testing.T) {
-	proc := newProc(100, 100)
+	proc := newProc(100, 100, testAppWindowFunc)
 
 	var wg sync.WaitGroup
 
@@ -347,7 +347,7 @@ func TestProc(t *testing.T) {
 	go func(wg *sync.WaitGroup) {
 		time.Sleep(2 * time.Second)
 		log.Println("shutting down after 2 seconds")
-		proc.shutdown()
+		proc.window.Close()
 		wg.Done()
 	}(&wg)
 
