@@ -35,7 +35,7 @@ type context struct {
 
 	tau float32 // Catmull-Rom tension, used for Curve.
 
-	stk op.StackOp
+	state op.StateOp
 }
 
 type strokeStyle struct {
@@ -53,13 +53,13 @@ func (stk *stackOps) cur() *context {
 	return &stk.ctx[len(stk.ctx)-1]
 }
 
-func (stk *stackOps) push() {
+func (stk *stackOps) save() {
 	stk.ctx = append(stk.ctx, *stk.cur())
-	stk.cur().stk = op.Push(stk.ops)
+	stk.cur().state = op.Save(stk.ops)
 }
 
-func (stk *stackOps) pop() {
-	stk.cur().stk.Pop()
+func (stk *stackOps) load() {
+	stk.cur().state.Load()
 	stk.ctx = stk.ctx[:len(stk.ctx)-1]
 }
 
@@ -97,12 +97,12 @@ func (stk *stackOps) matrix(aff f32.Affine2D) {
 
 // Push saves the current drawing style settings and transformations.
 func (p *Proc) Push() {
-	p.stk.push()
+	p.stk.save()
 }
 
 // Pop restores the previous drawing style settings and transformations.
 func (p *Proc) Pop() {
-	p.stk.pop()
+	p.stk.load()
 }
 
 // Rotate rotates the graphical context by angle radians.

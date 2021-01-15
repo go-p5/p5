@@ -357,7 +357,7 @@ func (p *Proc) Text(txt string, x, y float64) {
 	case text.Middle:
 		offset = x - 0.5*w
 	}
-	defer op.Push(p.ctx.Ops).Pop()
+	defer op.Save(p.ctx.Ops).Load()
 	op.Offset(f32.Point{
 		X: float32(offset),
 		Y: float32(y) - size,

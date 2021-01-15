@@ -49,7 +49,7 @@ func (p *Proc) Ellipse(x, y, w, h float64) {
 	}
 
 	if fill := p.stk.cur().fill; fill != nil {
-		stk := op.Push(p.ctx.Ops)
+		state := op.Save(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(fill),
@@ -57,11 +57,11 @@ func (p *Proc) Ellipse(x, y, w, h float64) {
 				Path: path(p.ctx.Ops),
 			}.Op(),
 		)
-		stk.Pop()
+		state.Load()
 	}
 
 	if stroke := p.stk.cur().stroke.color; stroke != nil {
-		stk := op.Push(p.ctx.Ops)
+		state := op.Save(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(stroke),
@@ -70,7 +70,7 @@ func (p *Proc) Ellipse(x, y, w, h float64) {
 				Style: p.stk.cur().stroke.style,
 			}.Op(),
 		)
-		stk.Pop()
+		state.Load()
 	}
 }
 
@@ -111,7 +111,7 @@ func (p *Proc) Arc(x, y, w, h float64, beg, end float64) {
 		p0       = p.pt(a*cos, b*sin).Add(c)
 		path     clip.Path
 	)
-	stk := op.Push(p.ctx.Ops)
+	defer op.Save(p.ctx.Ops).Load()
 	path.Begin(p.ctx.Ops)
 	path.Move(p0)
 	path.Arc(f1.Sub(p0), f2.Sub(p0), float32(end-beg))
@@ -124,7 +124,6 @@ func (p *Proc) Arc(x, y, w, h float64, beg, end float64) {
 			Style: p.stk.cur().stroke.style,
 		}.Op(),
 	)
-	stk.Pop()
 }
 
 // Line draws a line between (x1,y1) and (x2,y2).
@@ -138,7 +137,7 @@ func (p *Proc) Line(x1, y1, x2, y2 float64) {
 		p2   = p.pt(x2, y2)
 		path clip.Path
 	)
-	stk := op.Push(p.ctx.Ops)
+	defer op.Save(p.ctx.Ops).Load()
 	path.Begin(p.ctx.Ops)
 	path.Move(p1)
 	path.Line(p2.Sub(path.Pos()))
@@ -151,7 +150,6 @@ func (p *Proc) Line(x1, y1, x2, y2 float64) {
 			Style: p.stk.cur().stroke.style,
 		}.Op(),
 	)
-	stk.Pop()
 }
 
 // Quad draws a quadrilateral, connecting the 4 points (x1,y1),
@@ -201,7 +199,7 @@ func (p *Proc) Bezier(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 		path clip.Path
 	)
 
-	defer op.Push(p.ctx.Ops).Pop()
+	defer op.Save(p.ctx.Ops).Load()
 
 	path.Begin(p.ctx.Ops)
 	path.Move(sp)
@@ -257,7 +255,7 @@ func (p *Proc) Curve(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 		ep  = p4.Sub(sp)
 	)
 
-	defer op.Push(p.ctx.Ops).Pop()
+	defer op.Save(p.ctx.Ops).Load()
 
 	path.Begin(p.ctx.Ops)
 	path.Move(sp)
@@ -297,7 +295,7 @@ func (p *Proc) poly(ps ...f32.Point) {
 	}
 
 	if p.doFill() {
-		stk := op.Push(p.ctx.Ops)
+		state := op.Save(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(p.stk.cur().fill),
@@ -305,11 +303,11 @@ func (p *Proc) poly(ps ...f32.Point) {
 				Path: path(p.ctx.Ops),
 			}.Op(),
 		)
-		stk.Pop()
+		state.Load()
 	}
 
 	if p.doStroke() {
-		stk := op.Push(p.ctx.Ops)
+		state := op.Save(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(p.stk.cur().stroke.color),
@@ -318,6 +316,6 @@ func (p *Proc) poly(ps ...f32.Point) {
 				Style: p.stk.cur().stroke.style,
 			}.Op(),
 		)
-		stk.Pop()
+		state.Load()
 	}
 }

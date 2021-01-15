@@ -81,7 +81,7 @@ func (p *Path) Close() {
 
 func (p *Path) End() {
 	if p.proc.doFill() {
-		stk := op.Push(p.proc.ctx.Ops)
+		state := op.Save(p.proc.ctx.Ops)
 		paint.FillShape(
 			p.proc.ctx.Ops,
 			rgba(p.proc.stk.cur().fill),
@@ -89,11 +89,11 @@ func (p *Path) End() {
 				Path: p.path(),
 			}.Op(),
 		)
-		stk.Pop()
+		state.Load()
 	}
 
 	if p.proc.doStroke() {
-		stk := op.Push(p.proc.ctx.Ops)
+		state := op.Save(p.proc.ctx.Ops)
 		paint.FillShape(
 			p.proc.ctx.Ops,
 			rgba(p.proc.stk.cur().stroke.color),
@@ -102,7 +102,7 @@ func (p *Path) End() {
 				Style: p.proc.stk.cur().stroke.style,
 			}.Op(),
 		)
-		stk.Pop()
+		state.Load()
 	}
 
 	p.proc = nil
