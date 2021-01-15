@@ -6,9 +6,12 @@ package p5
 
 import (
 	"image/color"
+	"log"
 	"math"
 	"reflect"
+	"sync"
 	"testing"
+	"time"
 )
 
 func TestPhysCanvas(t *testing.T) {
@@ -326,4 +329,27 @@ func TestRandomSeed(t *testing.T) {
 	if reflect.DeepEqual(generatedSequences[1], generatedSequences[2]) {
 		t.Errorf("Calling RandomSeed with different seeds should produce different sequence of numbers")
 	}
+}
+
+func TestProc(t *testing.T) {
+	proc := newProc(100, 100)
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		log.Println("starting execution")
+		_ = proc.run()
+		wg.Done()
+	}(&wg)
+
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		time.Sleep(2 * time.Second)
+		log.Println("shutting down after 2 seconds")
+		proc.shutdown()
+		wg.Done()
+	}(&wg)
+
+	wg.Wait()
 }

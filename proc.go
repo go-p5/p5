@@ -23,6 +23,7 @@ import (
 	"gioui.org/app/headless"
 	"gioui.org/f32"
 	"gioui.org/font/gofont"
+	"gioui.org/io/event"
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/io/system"
@@ -88,6 +89,9 @@ type Proc struct {
 	stk  *stackOps
 	head *headless.Window
 	rand *rand.Rand
+	// event channel for sending window events and control the execution.
+	// useful for testing purposes
+	events chan event.Event
 }
 
 func newProc(w, h int) *Proc {
@@ -107,7 +111,7 @@ func newProc(w, h int) *Proc {
 
 	proc.cfg.th = material.NewTheme(gofont.Collection())
 	proc.stk.cur().stroke.style.Width = 2
-
+	proc.events = make(chan event.Event)
 	return proc
 }
 
@@ -185,6 +189,7 @@ func (p *Proc) run() error {
 		unit.Px(float32(width)),
 		unit.Px(float32(height)),
 	))
+
 	p.head, err = headless.NewWindow(width, height)
 	if err != nil {
 		return fmt.Errorf("p5: could not create headless window: %w", err)
@@ -204,8 +209,13 @@ func (p *Proc) run() error {
 
 	var cnt int
 
+	var e event.Event
 	for {
-		e := <-w.Events()
+		select {
+		case e = <-w.Events():
+		case e = <-p.events:
+		}
+
 		switch e := e.(type) {
 		case system.DestroyEvent:
 			return e.Err
@@ -242,6 +252,16 @@ func (p *Proc) run() error {
 			}
 		}
 	}
+}
+
+// shutdown will stop the execution of the running program
+func (p *Proc) shutdown() {
+	p.sendEvent(system.DestroyEvent{})
+	close(p.events)
+}
+
+func (p *Proc) sendEvent(e event.Event) {
+	p.events <- e
 }
 
 func (p *Proc) setupUserFuncs() {
