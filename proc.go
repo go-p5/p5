@@ -23,6 +23,7 @@ import (
 	"gioui.org/app/headless"
 	"gioui.org/f32"
 	"gioui.org/font/gofont"
+	"gioui.org/io/event"
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/io/system"
@@ -53,6 +54,22 @@ var (
 	defaultTextColor = color.Black
 	defaultTextSize  = float32(12)
 )
+
+// gioWindow represents an operating system window operated by Gio.
+type gioWindow interface {
+	// Close the window. The window's event loop should exit when it receives
+	// system.DestroyEvent.
+	Close()
+
+	// Events returns the channel where events are delivered.
+	Events() <-chan event.Event
+
+	// Invalidate the window such that a FrameEvent will be generated immediately.
+	// If the window is inactive, the event is sent when the window becomes active.
+	Invalidate()
+}
+
+var _ gioWindow = (*app.Window)(nil)
 
 // Proc is a p5 processor.
 //
@@ -88,16 +105,22 @@ type Proc struct {
 	stk  *stackOps
 	head *headless.Window
 	rand *rand.Rand
+
+	newWindow func(opts ...app.Option) gioWindow
 }
 
 func newProc(w, h int) *Proc {
 	proc := &Proc{
-		rand: rand.New(rand.NewSource(defaultSeed)),
 		ctx: layout.Context{
 			Ops: new(op.Ops),
 			Constraints: layout.Constraints{
 				Max: image.Pt(w, h),
 			},
+		},
+		rand: rand.New(rand.NewSource(defaultSeed)),
+
+		newWindow: func(opts ...app.Option) gioWindow {
+			return app.NewWindow(opts...)
 		},
 	}
 	proc.ctl.FrameRate = defaultFrameRate
@@ -181,7 +204,7 @@ func (p *Proc) run() error {
 		height = p.cfg.h
 	)
 
-	w := app.NewWindow(app.Title("p5"), app.Size(
+	w := p.newWindow(app.Title("p5"), app.Size(
 		unit.Px(float32(width)),
 		unit.Px(float32(height)),
 	))
@@ -301,15 +324,6 @@ func (p *Proc) PhysCanvas(w, h int, xmin, xmax, ymin, ymax float64) {
 // The default color is transparent.
 func (p *Proc) Background(c color.Color) {
 	p.stk.cur().bkg = c
-
-	p.ctl.mu.RLock()
-	defer p.ctl.mu.RUnlock()
-
-	if !p.ctl.run {
-		return
-	}
-
-	paint.Fill(p.ctx.Ops, rgba(c))
 }
 
 func (p *Proc) doStroke() bool {

@@ -14,7 +14,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"gioui.org/app/headless"
+	"gioui.org/app"
+	"gioui.org/io/event"
 	"gioui.org/io/system"
 	"gioui.org/op"
 	"github.com/go-p5/p5/internal/cmpimg"
@@ -22,11 +23,31 @@ import (
 
 var GenerateTestData = flag.Bool("regen", false, "Uses the current state to regenerate the test data.")
 
+type testWindow struct {
+	evts chan event.Event
+	opts []app.Option
+}
+
+func (w testWindow) Events() <-chan event.Event {
+	return w.evts
+}
+
+func (w testWindow) Close() {
+	w.evts <- system.DestroyEvent{}
+}
+
+func (w testWindow) Invalidate() {
+	w.evts <- system.FrameEvent{
+		Frame: func(ops *op.Ops) {},
+	}
+}
+
 type testProc struct {
 	*Proc
 	global bool
 	w, h   int
 	fname  string
+	evts   chan event.Event
 }
 
 func newTestGProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname string) *testProc {
@@ -38,19 +59,27 @@ func newTestGProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname strin
 func newTestProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname string) *testProc {
 	t.Helper()
 
+	evts := make(chan event.Event)
 	p := newProc(w, h)
 	p.Setup = func() { setup(p) }
 	p.Draw = func() { draw(p) }
+	p.newWindow = func(opts ...app.Option) gioWindow {
+		return testWindow{
+			evts: evts,
+			opts: opts,
+		}
+	}
 
 	return &testProc{
 		Proc:  p,
 		w:     w,
 		h:     h,
 		fname: fname,
+		evts:  evts,
 	}
 }
 
-func (p *testProc) Run(t *testing.T) {
+func (p *testProc) Run(t *testing.T, evts ...event.Event) {
 	t.Helper()
 
 	if p.global {
@@ -61,26 +90,61 @@ func (p *testProc) Run(t *testing.T) {
 		gproc = p.Proc
 	}
 
-	p.setupUserFuncs()
+	errc := make(chan error, 1)
+	done := make(chan int)
+	quit := make(chan int)
+	defer close(quit)
 
-	p.Proc.Setup()
+	go func() {
+		defer close(done)
+		select {
+		case errc <- p.Proc.run():
+		case <-quit:
+		}
+	}()
 
-	var (
-		err           error
-		width, height = p.cnvSize()
+	cmds := make([]event.Event, len(evts), len(evts)+2)
+	copy(cmds, evts)
+	cmds = append(cmds,
+		p.frame(t, nil),
+		system.DestroyEvent{},
 	)
 
-	p.head, err = headless.NewWindow(int(width), int(height))
-	if err != nil {
-		t.Fatalf("could not create headless window: %+v", err)
+loop:
+	for _, evt := range cmds {
+		select {
+		case p.evts <- evt:
+		case <-done:
+			// slice of user provided events closed the run-loop.
+			break loop
+		}
 	}
 
-	p.Proc.draw(system.FrameEvent{
-		Size:  image.Point{X: p.w, Y: p.h},
-		Frame: func(ops *op.Ops) {},
-	})
+	err := <-errc
+	if err != nil {
+		t.Fatalf("could not properly shutdown proc: %#+v", err)
+	}
+}
 
-	err = p.Proc.Screenshot(p.fname)
+func (p *testProc) frame(t *testing.T, frame func(ops *op.Ops)) event.Event {
+	if frame == nil {
+		frame = func(ops *op.Ops) {
+			p.screenshot(t)
+		}
+	}
+
+	return system.FrameEvent{
+		Size:  image.Point{X: p.w, Y: p.h},
+		Frame: frame,
+	}
+}
+
+func (p *testProc) screenshot(t *testing.T) {
+	if p.fname == "" {
+		return
+	}
+
+	err := p.Proc.Screenshot(p.fname)
 	if err != nil {
 		t.Fatalf("could not take screenshot: %+v", err)
 	}
@@ -117,6 +181,7 @@ func (p *testProc) Run(t *testing.T) {
 	if err := os.Remove(p.fname); err != nil {
 		t.Logf("could not delete image %s, err: %s", p.fname, err)
 	}
+
 }
 
 func TestText(t *testing.T) {
@@ -174,4 +239,23 @@ func TestHelloWorld(t *testing.T) {
 		"testdata/hello.png",
 	)
 	proc.Run(t)
+}
+
+func TestShutdown(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+	proc := newTestProc(t, w, h,
+		func(*Proc) {},
+		func(*Proc) {},
+		"",
+	)
+	proc.Run(t,
+		proc.frame(t, nil), proc.frame(t, nil),
+		system.DestroyEvent{},
+		proc.frame(t, func(ops *op.Ops) {
+			t.Fatalf("should not have executed this frame")
+		}),
+	)
 }

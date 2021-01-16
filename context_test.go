@@ -29,6 +29,7 @@ func TestPushPop(t *testing.T) {
 			{
 				Push()
 				Background(color.Black)
+				Fill(color.RGBA{R: 255, A: 255})
 				Pop()
 			}
 			TextSize(10)
