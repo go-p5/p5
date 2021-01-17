@@ -56,8 +56,8 @@ var (
 
 // Proc is a p5 processor.
 //
-// Proc runs the bound Setup function once before the event loop.
-// Proc then runs the bound Draw function once per event loop iteration.
+// Proc runs the bound Setup function once before the event IsLooping.
+// Proc then runs the bound Draw function once per event IsLooping iteration.
 type Proc struct {
 	Setup Func
 	Draw  Func
@@ -237,7 +237,7 @@ func (p *Proc) run() error {
 			Event.Mouse.Buttons = Buttons(e.Buttons)
 
 		case system.FrameEvent:
-			if p.loop() {
+			if p.IsLooping() {
 				p.draw(e)
 			}
 		}
@@ -256,10 +256,22 @@ func (p *Proc) setupUserFuncs() {
 	}
 }
 
-func (p *Proc) loop() bool {
+func (p *Proc) IsLooping() bool {
 	p.ctl.mu.RLock()
 	defer p.ctl.mu.RUnlock()
 	return p.ctl.loop
+}
+
+func (p *Proc) Loop() {
+	p.ctl.mu.Lock()
+	defer p.ctl.mu.Unlock()
+	p.ctl.loop = true
+}
+
+func (p *Proc) NoLoop() {
+	p.ctl.mu.Lock()
+	defer p.ctl.mu.Unlock()
+	p.ctl.loop = false
 }
 
 func (p *Proc) draw(e system.FrameEvent) {
