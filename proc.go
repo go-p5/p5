@@ -56,8 +56,8 @@ var (
 
 // Proc is a p5 processor.
 //
-// Proc runs the bound Setup function once before the event IsLooping.
-// Proc then runs the bound Draw function once per event IsLooping iteration.
+// Proc runs the bound Setup function once before the event loop.
+// Proc then runs the bound Draw function once per event loop iteration.
 type Proc struct {
 	Setup Func
 	Draw  Func
