@@ -81,3 +81,27 @@ func TestPathCube(t *testing.T) {
 	)
 	proc.Run(t)
 }
+
+func TestPathCube_NoLoop(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+	proc := newTestProc(t, w, h,
+		func(proc *Proc) {
+			proc.Fill(color.RGBA{R: 255, A: 255})
+		},
+		func(proc *Proc) {
+			p := proc.BeginPath()
+			p.Vertex(0, 0)
+			p.Cube(50, 10, 150, 10, 200, 100)
+			p.Cube(50, 10, 150, 10, 100, 200)
+			p.Cube(50, 10, 150, 10, 0, 0)
+			p.Close()
+			p.End()
+		},
+		"testdata/path_cube.png",
+	)
+	proc.NoLoop()
+	proc.Run(t)
+}
