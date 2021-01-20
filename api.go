@@ -119,8 +119,8 @@ func FrameCount() uint64 {
 	return gproc.FrameCount()
 }
 
-// By default, p5 continuously executes the code within draw().
-// Loop starts the draw loop again, if it was stopped previously by calling NoLoop().
+// By default, p5 continuously executes the code within Draw.
+// Loop starts the draw loop again, if it was stopped previously by calling NoLoop.
 func Loop() {
 	gproc.Loop()
 }
