@@ -130,7 +130,7 @@ func NoLoop() {
 	gproc.NoLoop()
 }
 
-// IsLooping checks if p5 is continuously executing the code within draw() or not.
+// IsLooping checks whether p5 is continuously executing the code within Draw.
 func IsLooping() bool {
 	return gproc.IsLooping()
 }
