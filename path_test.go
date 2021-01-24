@@ -89,6 +89,7 @@ func TestPathCube_NoLoop(t *testing.T) {
 	)
 	proc := newTestProc(t, w, h,
 		func(proc *Proc) {
+			proc.NoLoop()
 			proc.Fill(color.RGBA{R: 255, A: 255})
 		},
 		func(proc *Proc) {
@@ -102,6 +103,5 @@ func TestPathCube_NoLoop(t *testing.T) {
 		},
 		"testdata/path_cube.png",
 	)
-	proc.NoLoop()
 	proc.Run(t)
 }
