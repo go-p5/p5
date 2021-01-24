@@ -125,7 +125,7 @@ func Loop() {
 	gproc.Loop()
 }
 
-// NoLoop stops p5 from continuously executing the code within draw().
+// NoLoop stops p5 from continuously executing the code within Draw.
 func NoLoop() {
 	gproc.NoLoop()
 }
