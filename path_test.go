@@ -5,6 +5,7 @@
 package p5
 
 import (
+	"fmt"
 	"image/color"
 	"testing"
 )
@@ -82,26 +83,20 @@ func TestPathCube(t *testing.T) {
 	proc.Run(t)
 }
 
-func TestPathCube_NoLoop(t *testing.T) {
+func TestDraw_Framecount(t *testing.T) {
 	const (
 		w = 200
 		h = 200
 	)
 	proc := newTestProc(t, w, h,
 		func(proc *Proc) {
-			proc.NoLoop()
 			proc.Fill(color.RGBA{R: 255, A: 255})
+			proc.NoLoop()
 		},
 		func(proc *Proc) {
-			p := proc.BeginPath()
-			p.Vertex(0, 0)
-			p.Cube(50, 10, 150, 10, 200, 100)
-			p.Cube(50, 10, 150, 10, 100, 200)
-			p.Cube(50, 10, 150, 10, 0, 0)
-			p.Close()
-			p.End()
+			proc.Text(fmt.Sprintf("%d", proc.FrameCount()), 50, 50)
 		},
-		"testdata/path_cube.png",
+		"testdata/framecount.png",
 	)
 	proc.Run(t)
 }

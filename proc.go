@@ -282,7 +282,7 @@ func (p *Proc) setupUserFuncs() {
 }
 
 func (p *Proc) draw(e system.FrameEvent) {
-	defer p.incFrameCount()
+	p.incFrameCount()
 	p.ctx = layout.NewContext(p.ctx.Ops, e)
 
 	ops := p.ctx.Ops
