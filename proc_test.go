@@ -313,7 +313,7 @@ func TestFrameCount_NoLoop(t *testing.T) {
 	}
 }
 
-func Test_Loop(t *testing.T) {
+func TestFrameCount_Loop(t *testing.T) {
 	const (
 		w = 200
 		h = 200
