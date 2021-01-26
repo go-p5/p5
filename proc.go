@@ -83,9 +83,10 @@ type Proc struct {
 	ctl struct {
 		FrameRate time.Duration
 
-		mu   sync.RWMutex
-		run  bool
-		loop bool
+		mu      sync.RWMutex
+		run     bool
+		loop    bool
+		nframes uint64
 	}
 	cfg struct {
 		w int
@@ -260,7 +261,8 @@ func (p *Proc) run() error {
 			Event.Mouse.Buttons = Buttons(e.Buttons)
 
 		case system.FrameEvent:
-			if p.loop() {
+			// The first frame should always been drawn, even if looping is disabled
+			if p.IsLooping() || p.FrameCount() == 0 {
 				p.draw(e)
 			}
 		}
@@ -279,13 +281,8 @@ func (p *Proc) setupUserFuncs() {
 	}
 }
 
-func (p *Proc) loop() bool {
-	p.ctl.mu.RLock()
-	defer p.ctl.mu.RUnlock()
-	return p.ctl.loop
-}
-
 func (p *Proc) draw(e system.FrameEvent) {
+	p.incFrameCount()
 	p.ctx = layout.NewContext(p.ctx.Ops, e)
 
 	ops := p.ctx.Ops
@@ -293,7 +290,6 @@ func (p *Proc) draw(e system.FrameEvent) {
 	paint.Fill(ops, clr)
 
 	p.Draw()
-
 	e.Frame(ops)
 }
 
@@ -449,4 +445,39 @@ func (p *Proc) Random(min, max float64) float64 {
 // mean and standard deviation.
 func (p *Proc) RandomGaussian(mean, stdDev float64) float64 {
 	return p.rand.NormFloat64()*stdDev + mean
+}
+
+func (p *Proc) incFrameCount() {
+	p.ctl.mu.Lock()
+	defer p.ctl.mu.Unlock()
+	p.ctl.nframes++
+}
+
+// FrameCount returns the number of frames that have been displayed since the program started.
+func (p *Proc) FrameCount() uint64 {
+	p.ctl.mu.RLock()
+	defer p.ctl.mu.RUnlock()
+	return p.ctl.nframes
+}
+
+// By default, p5 continuously executes the code within draw().
+// Loop starts the draw loop again, if it was stopped previously by calling NoLoop().
+func (p *Proc) Loop() {
+	p.ctl.mu.Lock()
+	defer p.ctl.mu.Unlock()
+	p.ctl.loop = true
+}
+
+// NoLoop stops p5 from continuously executing the code within draw().
+func (p *Proc) NoLoop() {
+	p.ctl.mu.Lock()
+	defer p.ctl.mu.Unlock()
+	p.ctl.loop = false
+}
+
+// IsLooping checks if p5 is continuously executing the code within draw() or not.
+func (p *Proc) IsLooping() bool {
+	p.ctl.mu.RLock()
+	defer p.ctl.mu.RUnlock()
+	return p.ctl.loop
 }

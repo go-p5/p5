@@ -113,3 +113,24 @@ func Random(min, max float64) float64 {
 func RandomGaussian(mean, stdDev float64) float64 {
 	return gproc.RandomGaussian(mean, stdDev)
 }
+
+// FrameCount returns the number of frames that have been displayed since the program started.
+func FrameCount() uint64 {
+	return gproc.FrameCount()
+}
+
+// By default, p5 continuously executes the code within Draw.
+// Loop starts the draw loop again, if it was stopped previously by calling NoLoop.
+func Loop() {
+	gproc.Loop()
+}
+
+// NoLoop stops p5 from continuously executing the code within Draw.
+func NoLoop() {
+	gproc.NoLoop()
+}
+
+// IsLooping checks whether p5 is continuously executing the code within Draw.
+func IsLooping() bool {
+	return gproc.IsLooping()
+}

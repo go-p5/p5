@@ -5,6 +5,7 @@
 package p5
 
 import (
+	"fmt"
 	"image/color"
 	"testing"
 )
@@ -78,6 +79,24 @@ func TestPathCube(t *testing.T) {
 			p.End()
 		},
 		"testdata/path_cube.png",
+	)
+	proc.Run(t)
+}
+
+func TestDraw_Framecount(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+	proc := newTestProc(t, w, h,
+		func(proc *Proc) {
+			proc.Fill(color.RGBA{R: 255, A: 255})
+			proc.NoLoop()
+		},
+		func(proc *Proc) {
+			proc.Text(fmt.Sprintf("%d", proc.FrameCount()), 50, 50)
+		},
+		"testdata/framecount.png",
 	)
 	proc.Run(t)
 }

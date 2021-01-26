@@ -259,3 +259,83 @@ func TestShutdown(t *testing.T) {
 		}),
 	)
 }
+
+func TestFrameCount(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+	proc := newTestProc(t, w, h,
+		func(*Proc) {},
+		func(*Proc) {},
+		"",
+	)
+
+	if fc := proc.FrameCount(); fc != 0 {
+		t.Fatalf("framecount should be 0, go %d", fc)
+	}
+
+	proc.Run(t,
+		proc.frame(t, nil),
+		proc.frame(t, nil),
+	)
+
+	// TestProc always sends 1 frame event
+	if fc := proc.FrameCount(); fc != 3 {
+		t.Fatalf("framecount should be 3, got %d", fc)
+	}
+}
+
+func TestFrameCount_NoLoop(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+	proc := newTestProc(t, w, h,
+		func(*Proc) {},
+		func(*Proc) {},
+		"",
+	)
+
+	proc.NoLoop()
+	if fc := proc.FrameCount(); fc != 0 {
+		t.Fatalf("framecount should be 0, got %d", fc)
+	}
+
+	proc.Run(t,
+		proc.frame(t, nil),
+		proc.frame(t, nil),
+	)
+
+	// TestProc always sends 1 frame event
+	if fc := proc.FrameCount(); fc != 1 {
+		t.Fatalf("framecount should be 0, got %d", fc)
+	}
+}
+
+func TestFrameCount_Loop(t *testing.T) {
+	const (
+		w = 200
+		h = 200
+	)
+	proc := newTestProc(t, w, h,
+		func(*Proc) {},
+		func(*Proc) {},
+		"",
+	)
+
+	// By default looping should be enabled
+	if !proc.IsLooping() {
+		t.Fatalf("should be looping")
+	}
+
+	proc.NoLoop()
+	if proc.IsLooping() {
+		t.Fatalf("should not be looping")
+	}
+
+	proc.Loop()
+	if !proc.IsLooping() {
+		t.Fatalf("should be looping")
+	}
+}
