@@ -20,9 +20,9 @@ import (
 	"time"
 
 	"gioui.org/app"
-	"gioui.org/app/headless"
 	"gioui.org/f32"
 	"gioui.org/font/gofont"
+	"gioui.org/gpu/headless"
 	"gioui.org/io/event"
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
