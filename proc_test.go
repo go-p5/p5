@@ -122,7 +122,7 @@ loop:
 
 	err := <-errc
 	if err != nil {
-		t.Fatalf("could not properly shutdown proc: %#+v", err)
+		t.Fatalf("could not properly shutdown proc: %+v", err)
 	}
 }
 
