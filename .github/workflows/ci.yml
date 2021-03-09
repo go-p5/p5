@@ -13,6 +13,7 @@ env:
   TAGS:     "-tags=ci"
   COVERAGE: "-coverpkg=github.com/go-p5/p5/..."
   DISPLAY:  ":99.0"
+  EGL_PLATFORM: "x11"
 
 jobs:
 
