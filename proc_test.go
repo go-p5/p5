@@ -146,13 +146,15 @@ func (p *testProc) screenshot(t *testing.T) {
 
 	err := p.Proc.Screenshot(p.fname)
 	if err != nil {
-		t.Fatalf("could not take screenshot: %+v", err)
+		t.Errorf("could not take screenshot: %+v", err)
+		return
 	}
 
 	fname := p.fname
 	got, err := ioutil.ReadFile(fname)
 	if err != nil {
-		t.Fatalf("could not read back screenshot: %+v", err)
+		t.Errorf("could not read back screenshot: %+v", err)
+		return
 	}
 
 	ext := filepath.Ext(fname)
@@ -161,21 +163,25 @@ func (p *testProc) screenshot(t *testing.T) {
 	if *GenerateTestData {
 		err = ioutil.WriteFile(fname, got, 0644)
 		if err != nil {
-			t.Fatalf("could not regen reference file %q: %+v", fname, err)
+			t.Errorf("could not regen reference file %q: %+v", fname, err)
+			return
 		}
 	}
 
 	want, err := ioutil.ReadFile(fname)
 	if err != nil {
-		t.Fatalf("could not read back golden: %+v", err)
+		t.Errorf("could not read back golden: %+v", err)
+		return
 	}
 
 	ok, err := cmpimg.EqualApprox(ext[1:], got, want, 0.1)
 	if err != nil {
-		t.Fatalf("%s: could not compare images: %+v", p.fname, err)
+		t.Errorf("%s: could not compare images: %+v", p.fname, err)
+		return
 	}
 	if !ok {
-		t.Fatalf("%s: images compare different", p.fname)
+		t.Errorf("%s: images compare different", p.fname)
+		return
 	}
 
 	if err := os.Remove(p.fname); err != nil {
