@@ -5,6 +5,7 @@
 package p5
 
 import (
+	"encoding/base64"
 	"flag"
 	"image"
 	"image/color"
@@ -181,6 +182,7 @@ func (p *testProc) screenshot(t *testing.T) {
 	}
 	if !ok {
 		t.Errorf("%s: images compare different", p.fname)
+		t.Log("IMAGE:" + base64.StdEncoding.EncodeToString(got))
 		return
 	}
 
