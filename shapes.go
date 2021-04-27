@@ -40,21 +40,25 @@ func (p *Proc) Ellipse(x, y, w, h float64) {
 		f2 = p.pt(x, y-ec).Sub(p1)
 	}
 
-	path := func(o *op.Ops) clip.PathSpec {
+	path := func(o *op.Ops, close bool) clip.PathSpec {
 		var path clip.Path
 		path.Begin(o)
 		path.Move(p1)
 		path.Arc(f1, f2, 2*math.Pi)
+		if close {
+			path.Close()
+		}
 		return path.End()
 	}
 
 	if fill := p.stk.cur().fill; fill != nil {
 		state := op.Save(p.ctx.Ops)
+		close := true
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(fill),
 			clip.Outline{
-				Path: path(p.ctx.Ops),
+				Path: path(p.ctx.Ops, close),
 			}.Op(),
 		)
 		state.Load()
@@ -62,11 +66,12 @@ func (p *Proc) Ellipse(x, y, w, h float64) {
 
 	if stroke := p.stk.cur().stroke.color; stroke != nil {
 		state := op.Save(p.ctx.Ops)
+		close := false
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(stroke),
 			clip.Stroke{
-				Path:  path(p.ctx.Ops),
+				Path:  path(p.ctx.Ops, close),
 				Style: p.stk.cur().stroke.style,
 			}.Op(),
 		)
