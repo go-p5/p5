@@ -5,6 +5,7 @@
 package p5
 
 import (
+	"image"
 	"image/color"
 	"log"
 )
@@ -133,4 +134,14 @@ func NoLoop() {
 // IsLooping checks whether p5 is continuously executing the code within Draw.
 func IsLooping() bool {
 	return gproc.IsLooping()
+}
+
+// ReadImage reads a BMP, JPG, GIF, PNG or TIFF image from the provided path.
+func ReadImage(fname string) (image.Image, error) {
+	return gproc.ReadImage(fname)
+}
+
+// DrawImage draws the provided image at (x,y).
+func DrawImage(img image.Image, x, y float64) {
+	gproc.DrawImage(img, x, y)
 }

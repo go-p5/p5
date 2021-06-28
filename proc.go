@@ -5,6 +5,7 @@
 package p5
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/color"
@@ -12,6 +13,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -34,6 +36,8 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget/material"
 	"golang.org/x/exp/rand"
+	"golang.org/x/image/bmp"
+	"golang.org/x/image/tiff"
 	"gonum.org/v1/gonum/spatial/r1"
 )
 
@@ -480,4 +484,39 @@ func (p *Proc) IsLooping() bool {
 	p.ctl.mu.RLock()
 	defer p.ctl.mu.RUnlock()
 	return p.ctl.loop
+}
+
+// ReadImage reads a BMP, JPG, GIF, PNG or TIFF image from the provided path.
+func (p *Proc) ReadImage(fname string) (img image.Image, err error) {
+	raw, err := ioutil.ReadFile(fname)
+	if err != nil {
+		return nil, fmt.Errorf("p5: could not read image at %q: %w", fname, err)
+	}
+	r := bytes.NewReader(raw)
+
+	switch {
+	case bytes.Equal(raw[:4], []byte("\x89PNG")):
+		img, err = png.Decode(r)
+	case bytes.Equal(raw[:3], []byte("\xff\xd8\xff")):
+		img, err = jpeg.Decode(r)
+	case bytes.Equal(raw[:6], []byte("GIF87a")), bytes.Equal(raw[:6], []byte("GIF89a")):
+		img, err = gif.Decode(r)
+	case bytes.Equal(raw[:2], []byte("BM")):
+		img, err = bmp.Decode(r)
+	case bytes.Equal(raw[:4], []byte("II\x2A\x00")), bytes.Equal(raw[:4], []byte("MM\x00\x2A")):
+		img, err = tiff.Decode(r)
+	default:
+		err = fmt.Errorf("p5: unknown image header for %q (hdr=%q)", fname, raw[:4])
+	}
+	return img, err
+}
+
+// DrawImage draws the provided image at (x,y).
+func (p *Proc) DrawImage(img image.Image, x, y float64) {
+	p.stk.save()
+	defer p.stk.load()
+
+	p.stk.translate(x, y)
+	paint.NewImageOp(img).Add(p.stk.ops)
+	paint.PaintOp{}.Add(p.stk.ops)
 }

@@ -5,10 +5,13 @@
 package p5
 
 import (
+	"image"
 	"image/color"
 	"math"
 	"reflect"
 	"testing"
+
+	"golang.org/x/image/draw"
 )
 
 func TestPhysCanvas(t *testing.T) {
@@ -326,4 +329,62 @@ func TestRandomSeed(t *testing.T) {
 	if reflect.DeepEqual(generatedSequences[1], generatedSequences[2]) {
 		t.Errorf("Calling RandomSeed with different seeds should produce different sequence of numbers")
 	}
+}
+
+func TestReadImage(t *testing.T) {
+	for _, fname := range []string{
+		"testdata/gopher.png",
+		"testdata/gopher.bmp",
+		"testdata/gopher.jpg",
+		"testdata/gopher.gif",
+		"testdata/gopher.tiff",
+	} {
+		t.Run(fname, func(t *testing.T) {
+			_, err := ReadImage(fname)
+			if err != nil {
+				t.Fatalf("could not read image %q: %+v", fname, err)
+			}
+		})
+	}
+}
+
+func TestDrawImage(t *testing.T) {
+	src, err := ReadImage("testdata/gopher.png")
+	if err != nil {
+		t.Fatalf("could not read image: %+v", err)
+	}
+
+	const (
+		w = 200
+		h = 200
+	)
+
+	dst := image.NewRGBA(image.Rect(0, 0, w/2, h/2))
+	draw.NearestNeighbor.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Over, nil)
+
+	proc := newTestGProc(t, w, h,
+		func(*Proc) {
+			Background(color.Gray{Y: 220})
+		},
+		func(p *Proc) {
+			DrawImage(dst, w/2, h/2)
+
+			Push()
+			Rotate(-math.Pi / 8)
+			Scale(0.6, 0.6)
+			Translate(w/2, h*2/3)
+			DrawImage(dst, 0, 0)
+			Pop()
+
+			for i := 0; i < 10; i++ {
+				f := 0.1 * float64(i+1)
+				Push()
+				Scale(f, f)
+				DrawImage(dst, f*float64(w/2), f*float64(h/2))
+				Pop()
+			}
+		},
+		"testdata/gopher-image.png",
+	)
+	proc.Run(t)
 }
