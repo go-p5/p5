@@ -5,13 +5,12 @@
 package main
 
 import (
-	"bytes"
 	"image"
 	"image/color"
 	"image/png"
-	"io/ioutil"
 	"log"
 	"math"
+	"net/http"
 	"time"
 
 	"github.com/go-p5/p5"
@@ -36,12 +35,14 @@ var img Image
 func setup() {
 	p5.Canvas(width, height)
 
-	raw, err := ioutil.ReadFile("../../testdata/gopher.png")
+	// FIXME(sbinet): use 'embed' when we no longer support Go-1.15.
+	resp, err := http.Get("https://github.com/go-p5/p5/raw/main/testdata/gopher.png")
 	if err != nil {
-		log.Fatalf("could not read image: %+v", err)
+		log.Fatalf("could not fetch image: %+v", err)
 	}
+	defer resp.Body.Close()
 
-	src, err := png.Decode(bytes.NewReader(raw))
+	src, err := png.Decode(resp.Body)
 	if err != nil {
 		log.Fatalf("could not decode PNG image: %+v", err)
 	}
