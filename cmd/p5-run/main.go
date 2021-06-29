@@ -102,7 +102,7 @@ const (
 )
 
 func (g *generator) genGoMod(dir string) error {
-	err := ioutil.WriteFile(
+	err := os.WriteFile(
 		filepath.Join(dir, "go.mod"),
 		[]byte(fmt.Sprintf(gomod, fakeModule)), 0644,
 	)
@@ -184,7 +184,7 @@ func main() {
 	}
 
 	if g.verbose {
-		raw, _ := ioutil.ReadFile(f.Name())
+		raw, _ := os.ReadFile(f.Name())
 		log.Printf("code:\n%s\n", string(raw))
 	}
 

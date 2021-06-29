@@ -9,7 +9,6 @@ import (
 	"flag"
 	"image"
 	"image/color"
-	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
@@ -152,7 +151,7 @@ func (p *testProc) screenshot(t *testing.T) {
 	}
 
 	fname := p.fname
-	got, err := ioutil.ReadFile(fname)
+	got, err := os.ReadFile(fname)
 	if err != nil {
 		t.Errorf("could not read back screenshot: %+v", err)
 		return
@@ -162,14 +161,14 @@ func (p *testProc) screenshot(t *testing.T) {
 	fname = fname[:len(fname)-len(ext)] + "_golden" + ext
 
 	if *GenerateTestData {
-		err = ioutil.WriteFile(fname, got, 0644)
+		err = os.WriteFile(fname, got, 0644)
 		if err != nil {
 			t.Errorf("could not regen reference file %q: %+v", fname, err)
 			return
 		}
 	}
 
-	want, err := ioutil.ReadFile(fname)
+	want, err := os.ReadFile(fname)
 	if err != nil {
 		t.Errorf("could not read back golden: %+v", err)
 		return

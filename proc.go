@@ -13,7 +13,6 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -488,7 +487,7 @@ func (p *Proc) IsLooping() bool {
 
 // ReadImage reads a BMP, JPG, GIF, PNG or TIFF image from the provided path.
 func (p *Proc) ReadImage(fname string) (img image.Image, err error) {
-	raw, err := ioutil.ReadFile(fname)
+	raw, err := os.ReadFile(fname)
 	if err != nil {
 		return nil, fmt.Errorf("p5: could not read image at %q: %w", fname, err)
 	}

@@ -9,9 +9,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"runtime"
 )
@@ -71,7 +71,7 @@ func wasmMainHandle(w http.ResponseWriter, r *http.Request) {
 
 func initWASM() {
 	fname := filepath.Join(runtime.GOROOT(), "misc", "wasm", "wasm_exec.js")
-	raw, err := ioutil.ReadFile(fname)
+	raw, err := os.ReadFile(fname)
 	if err != nil {
 		log.Panicf("could not locate wasm_exec.js: %+v", err)
 	}
@@ -79,7 +79,7 @@ func initWASM() {
 }
 
 func loadWASM() {
-	raw, err := ioutil.ReadFile(wasmName)
+	raw, err := os.ReadFile(wasmName)
 	if err != nil {
 		log.Printf("could not find WASM file: %+v", err)
 		log.Fatalf("please run 'go generate'")
