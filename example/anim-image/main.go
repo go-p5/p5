@@ -5,17 +5,21 @@
 package main
 
 import (
+	"bytes"
+	_ "embed"
 	"image"
 	"image/color"
 	"image/png"
 	"log"
 	"math"
-	"net/http"
 	"time"
 
 	"github.com/go-p5/p5"
 	xdraw "golang.org/x/image/draw"
 )
+
+//go:embed testdata/gopher.png
+var raw []byte
 
 func main() {
 	p5.Run(setup, draw)
@@ -35,14 +39,7 @@ var img Image
 func setup() {
 	p5.Canvas(width, height)
 
-	// FIXME(sbinet): use 'embed' when we no longer support Go-1.15.
-	resp, err := http.Get("https://github.com/go-p5/p5/raw/main/testdata/gopher.png")
-	if err != nil {
-		log.Fatalf("could not fetch image: %+v", err)
-	}
-	defer resp.Body.Close()
-
-	src, err := png.Decode(resp.Body)
+	src, err := png.Decode(bytes.NewReader(raw))
 	if err != nil {
 		log.Fatalf("could not decode PNG image: %+v", err)
 	}
