@@ -82,6 +82,7 @@ type Proc struct {
 	Setup Func
 	Draw  Func
 	Mouse Func
+	Key   Func
 
 	ctl struct {
 		FrameRate time.Duration
@@ -238,6 +239,10 @@ func (p *Proc) run() error {
 			return e.Err
 
 		case key.Event:
+			Event.Key.Prev = Event.Key.Cur
+			Event.Key.Cur = e
+			p.Key()
+
 			switch e.Name {
 			case key.NameEscape:
 				w.Close()
@@ -281,6 +286,9 @@ func (p *Proc) setupUserFuncs() {
 	}
 	if p.Mouse == nil {
 		p.Mouse = func() {}
+	}
+	if p.Key == nil {
+		p.Key = func() {}
 	}
 }
 
