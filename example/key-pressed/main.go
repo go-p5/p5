@@ -25,7 +25,7 @@ func setup() {
 }
 
 func draw() {
-	if p5.KeyIsPressed {
+	if p5.Keyboard.KeyIsPressed {
 		p5.Stroke(color.Black)
 		p5.Fill(color.RGBA{R: 255, A: 255})
 	} else {

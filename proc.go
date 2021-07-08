@@ -200,18 +200,18 @@ func (p *Proc) Run() {
 func (p *Proc) onKeyPressed(e key.Event) {
 
 	// Pressed key should not be longer in release (removal) stash
-	delete(KeyboardCore._KeyReleaseStash, e.Name)
+	delete(Keyboard.keyReleaseStash, e.Name)
 
 	// Prevent multiple keypress firings
-	if _, ok := KeyboardCore._DownKeys[e.Name]; ok {
+	if Keyboard.downKeys[e.Name] {
 		return
 	}
 
-	KeyIsPressed = true
-	Key = e.Name
-	KeyboardCore._DownKeys[e.Name] = true
+	Keyboard.KeyIsPressed = true
+	Keyboard.Key = e.Name
+	Keyboard.downKeys[e.Name] = true
 
-	KeyboardCore.CallbackKeyPressed(e)
+	Keyboard.keyPressedCb(e)
 
 	// If pressed key is not a printable ASCII character, then we
 	// should stop here. Otherwise we consider key as *typed*.
@@ -220,33 +220,33 @@ func (p *Proc) onKeyPressed(e key.Event) {
 	}
 
 	// Prevent multiple keytyped firings
-	if KeyboardCore._LastKeyTyped == e.Name {
+	if Keyboard.lastKeyTyped == e.Name {
 		return
 	}
 
-	KeyboardCore._LastKeyTyped = e.Name
-	Key = e.Name
+	Keyboard.lastKeyTyped = e.Name
+	Keyboard.Key = e.Name
 
-	KeyboardCore.CallbackKeyTyped(e)
+	Keyboard.keyTypedCb(e)
 }
 
 func (p *Proc) onKeyVirtuallyReleased(e key.Event) {
 	// Add key to removal stash
-	KeyboardCore._KeyReleaseStash[e.Name] = e
+	Keyboard.keyReleaseStash[e.Name] = e
 }
 
 func (p *Proc) onKeyReleased(e key.Event) {
-	delete(KeyboardCore._DownKeys, e.Name)
+	delete(Keyboard.downKeys, e.Name)
 
-	if len(KeyboardCore._DownKeys) == 0 {
-		KeyIsPressed = false
+	if len(Keyboard.downKeys) == 0 {
+		Keyboard.KeyIsPressed = false
 	}
 
-	KeyboardCore._LastKeyTyped = ""
+	Keyboard.lastKeyTyped = ""
 
-	Key = e.Name
+	Keyboard.Key = e.Name
 
-	KeyboardCore.CallbackKeyReleased(e)
+	Keyboard.keyReleasedCb(e)
 }
 
 func (p *Proc) run() error {
@@ -283,8 +283,8 @@ func (p *Proc) run() error {
 
 	var cnt int
 
-	KeyboardCore._DownKeys = make(map[string]bool)
-	KeyboardCore._KeyReleaseStash = make(map[string]key.Event)
+	Keyboard.downKeys = make(map[string]bool)
+	Keyboard.keyReleaseStash = make(map[string]key.Event)
 
 	for {
 		e := <-w.Events()
@@ -330,9 +330,9 @@ func (p *Proc) run() error {
 		case system.FrameEvent:
 
 			// When frame appears we can deal with released keys
-			for keyName, e := range KeyboardCore._KeyReleaseStash {
+			for keyName, e := range Keyboard.keyReleaseStash {
 				p.onKeyReleased(e)
-				delete(KeyboardCore._KeyReleaseStash, keyName)
+				delete(Keyboard.keyReleaseStash, keyName)
 			}
 
 			// The first frame should always been drawn, even if looping is disabled
@@ -353,14 +353,14 @@ func (p *Proc) setupUserFuncs() {
 	if p.Mouse == nil {
 		p.Mouse = func() {}
 	}
-	if KeyboardCore.CallbackKeyPressed == nil {
-		KeyboardCore.CallbackKeyPressed = func(key.Event) {}
+	if Keyboard.keyPressedCb == nil {
+		Keyboard.keyPressedCb = func(key.Event) {}
 	}
-	if KeyboardCore.CallbackKeyTyped == nil {
-		KeyboardCore.CallbackKeyTyped = func(key.Event) {}
+	if Keyboard.keyTypedCb == nil {
+		Keyboard.keyTypedCb = func(key.Event) {}
 	}
-	if KeyboardCore.CallbackKeyReleased == nil {
-		KeyboardCore.CallbackKeyReleased = func(key.Event) {}
+	if Keyboard.keyReleasedCb == nil {
+		Keyboard.keyReleasedCb = func(key.Event) {}
 	}
 }
 
