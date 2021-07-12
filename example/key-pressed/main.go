@@ -13,10 +13,11 @@ import (
 )
 
 func main() {
-	p5.SetKeyPressedCallback(keyPressed)
-	p5.SetKeyTypedCallback(keyTyped)
-	p5.SetKeyReleasedCallback(keyReleased)
-	p5.Run(setup, draw)
+	p5.Run(setup, draw, p5.WithKeyCallback(p5.KeyCb{
+		Pressed:  keyPressed,
+		Typed:    keyTyped,
+		Released: keyReleased,
+	}))
 }
 
 func setup() {

@@ -13,10 +13,6 @@ var Keyboard struct {
 	downKeys        map[string]struct{}
 	keyReleaseStash map[string]key.Event
 	lastKeyTyped    string
-
-	keyPressedCb  KeyEventFunc
-	keyTypedCb    KeyEventFunc
-	keyReleasedCb KeyEventFunc
 }
 
 // KeyIsDown checks if given key is already pressed.
@@ -30,20 +26,8 @@ func (p *Proc) KeyIsDown(code string) bool {
 // KeyEventFunc is the type of key functions users provide to p5.
 type KeyEventFunc func(key.Event)
 
-// SetKeyPressedCallback binds the given function to the p5 processor's
-// key pressed callback.
-func SetKeyPressedCallback(f KeyEventFunc) {
-	Keyboard.keyPressedCb = f
-}
-
-// SetKeyTypedCallback binds the given function to the p5 processor's
-// key typed callback.
-func SetKeyTypedCallback(f KeyEventFunc) {
-	Keyboard.keyTypedCb = f
-}
-
-// SetKeyReleasedCallback binds the given function to the p5 processor's
-// key released callback.
-func SetKeyReleasedCallback(f KeyEventFunc) {
-	Keyboard.keyReleasedCb = f
+type KeyCb struct {
+	Pressed  KeyEventFunc
+	Typed    KeyEventFunc
+	Released KeyEventFunc
 }

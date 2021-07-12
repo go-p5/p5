@@ -79,9 +79,12 @@ var _ gioWindow = (*app.Window)(nil)
 // Proc runs the bound Setup function once before the event loop.
 // Proc then runs the bound Draw function once per event loop iteration.
 type Proc struct {
-	Setup Func
-	Draw  Func
-	Mouse Func
+	Setup       Func
+	Draw        Func
+	Mouse       Func
+	KeyPressed  KeyEventFunc
+	KeyTyped    KeyEventFunc
+	KeyReleased KeyEventFunc
 
 	ctl struct {
 		FrameRate time.Duration
@@ -211,7 +214,7 @@ func (p *Proc) onKeyPressed(e key.Event) {
 	Keyboard.Key = e.Name
 	Keyboard.downKeys[e.Name] = struct{}{}
 
-	Keyboard.keyPressedCb(e)
+	p.KeyPressed(e)
 
 	// If pressed key is not a printable ASCII character, then we
 	// should stop here. Otherwise we consider key as *typed*.
@@ -227,7 +230,7 @@ func (p *Proc) onKeyPressed(e key.Event) {
 	Keyboard.lastKeyTyped = e.Name
 	Keyboard.Key = e.Name
 
-	Keyboard.keyTypedCb(e)
+	p.KeyTyped(e)
 }
 
 func (p *Proc) onKeyVirtuallyReleased(e key.Event) {
@@ -246,7 +249,7 @@ func (p *Proc) onKeyReleased(e key.Event) {
 
 	Keyboard.Key = e.Name
 
-	Keyboard.keyReleasedCb(e)
+	p.KeyReleased(e)
 }
 
 func (p *Proc) run() error {
@@ -353,14 +356,14 @@ func (p *Proc) setupUserFuncs() {
 	if p.Mouse == nil {
 		p.Mouse = func() {}
 	}
-	if Keyboard.keyPressedCb == nil {
-		Keyboard.keyPressedCb = func(key.Event) {}
+	if p.KeyPressed == nil {
+		p.KeyPressed = func(key.Event) {}
 	}
-	if Keyboard.keyTypedCb == nil {
-		Keyboard.keyTypedCb = func(key.Event) {}
+	if p.KeyTyped == nil {
+		p.KeyTyped = func(key.Event) {}
 	}
-	if Keyboard.keyReleasedCb == nil {
-		Keyboard.keyReleasedCb = func(key.Event) {}
+	if p.KeyReleased == nil {
+		p.KeyReleased = func(key.Event) {}
 	}
 }
 
