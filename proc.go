@@ -203,13 +203,13 @@ func (p *Proc) onKeyPressed(e key.Event) {
 	delete(Keyboard.keyReleaseStash, e.Name)
 
 	// Prevent multiple keypress firings
-	if Keyboard.downKeys[e.Name] {
+	if _, ok := Keyboard.downKeys[e.Name]; ok {
 		return
 	}
 
 	Keyboard.KeyIsPressed = true
 	Keyboard.Key = e.Name
-	Keyboard.downKeys[e.Name] = true
+	Keyboard.downKeys[e.Name] = struct{}{}
 
 	Keyboard.keyPressedCb(e)
 
@@ -283,7 +283,7 @@ func (p *Proc) run() error {
 
 	var cnt int
 
-	Keyboard.downKeys = make(map[string]bool)
+	Keyboard.downKeys = make(map[string]struct{})
 	Keyboard.keyReleaseStash = make(map[string]key.Event)
 
 	for {

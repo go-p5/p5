@@ -10,7 +10,7 @@ var Keyboard struct {
 	KeyIsPressed bool
 	Key          string
 
-	downKeys        map[string]bool
+	downKeys        map[string]struct{}
 	keyReleaseStash map[string]key.Event
 	lastKeyTyped    string
 
@@ -21,7 +21,10 @@ var Keyboard struct {
 
 // KeyIsDown checks if given key is already pressed.
 func (p *Proc) KeyIsDown(code string) bool {
-	return Keyboard.downKeys[code]
+	if _, ok := Keyboard.downKeys[code]; ok {
+		return true
+	}
+	return false
 }
 
 // KeyEventFunc is the type of key functions users provide to p5.
