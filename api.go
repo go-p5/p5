@@ -145,3 +145,8 @@ func ReadImage(fname string) (image.Image, error) {
 func DrawImage(img image.Image, x, y float64) {
 	gproc.DrawImage(img, x, y)
 }
+
+// KeyIsDown checks if given key is already pressed.
+func KeyIsDown(code string) bool {
+	return gproc.KeyIsDown(code)
+}

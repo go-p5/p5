@@ -79,9 +79,12 @@ var _ gioWindow = (*app.Window)(nil)
 // Proc runs the bound Setup function once before the event loop.
 // Proc then runs the bound Draw function once per event loop iteration.
 type Proc struct {
-	Setup Func
-	Draw  Func
-	Mouse Func
+	Setup       Func
+	Draw        Func
+	Mouse       Func
+	KeyPressed  KeyEventFunc
+	KeyTyped    KeyEventFunc
+	KeyReleased KeyEventFunc
 
 	ctl struct {
 		FrameRate time.Duration
@@ -197,6 +200,58 @@ func (p *Proc) Run() {
 	app.Main()
 }
 
+func (p *Proc) onKeyPressed(e key.Event) {
+
+	// Pressed key should not be longer in release (removal) stash
+	delete(Keyboard.keyReleaseStash, e.Name)
+
+	// Prevent multiple keypress firings
+	if _, ok := Keyboard.downKeys[e.Name]; ok {
+		return
+	}
+
+	Keyboard.KeyIsPressed = true
+	Keyboard.Key = e.Name
+	Keyboard.downKeys[e.Name] = struct{}{}
+
+	p.KeyPressed(e)
+
+	// If pressed key is not a printable ASCII character, then we
+	// should stop here. Otherwise we consider key as *typed*.
+	if !(len(e.Name) == 1 && ' ' <= e.Name[0] && e.Name[0] <= '~') {
+		return
+	}
+
+	// Prevent multiple keytyped firings
+	if Keyboard.lastKeyTyped == e.Name {
+		return
+	}
+
+	Keyboard.lastKeyTyped = e.Name
+	Keyboard.Key = e.Name
+
+	p.KeyTyped(e)
+}
+
+func (p *Proc) onKeyVirtuallyReleased(e key.Event) {
+	// Add key to removal stash
+	Keyboard.keyReleaseStash[e.Name] = e
+}
+
+func (p *Proc) onKeyReleased(e key.Event) {
+	delete(Keyboard.downKeys, e.Name)
+
+	if len(Keyboard.downKeys) == 0 {
+		Keyboard.KeyIsPressed = false
+	}
+
+	Keyboard.lastKeyTyped = ""
+
+	Keyboard.Key = e.Name
+
+	p.KeyReleased(e)
+}
+
 func (p *Proc) run() error {
 	p.setupUserFuncs()
 
@@ -231,6 +286,9 @@ func (p *Proc) run() error {
 
 	var cnt int
 
+	Keyboard.downKeys = make(map[string]struct{})
+	Keyboard.keyReleaseStash = make(map[string]key.Event)
+
 	for {
 		e := <-w.Events()
 		switch e := e.(type) {
@@ -238,6 +296,15 @@ func (p *Proc) run() error {
 			return e.Err
 
 		case key.Event:
+			if e.State == key.Press {
+				p.onKeyPressed(e)
+			} else if e.State == key.Release {
+				// We must ensure that if this is truly the end of the keypress,
+				// we get another frame to remove the record of this key's press.
+				p.onKeyVirtuallyReleased(e)
+				w.Invalidate()
+			}
+
 			switch e.Name {
 			case key.NameEscape:
 				w.Close()
@@ -264,6 +331,13 @@ func (p *Proc) run() error {
 			Event.Mouse.Buttons = Buttons(e.Buttons)
 
 		case system.FrameEvent:
+
+			// When frame appears we can deal with released keys
+			for keyName, e := range Keyboard.keyReleaseStash {
+				p.onKeyReleased(e)
+				delete(Keyboard.keyReleaseStash, keyName)
+			}
+
 			// The first frame should always been drawn, even if looping is disabled
 			if p.IsLooping() || p.FrameCount() == 0 {
 				p.draw(e)
@@ -281,6 +355,15 @@ func (p *Proc) setupUserFuncs() {
 	}
 	if p.Mouse == nil {
 		p.Mouse = func() {}
+	}
+	if p.KeyPressed == nil {
+		p.KeyPressed = func(key.Event) {}
+	}
+	if p.KeyTyped == nil {
+		p.KeyTyped = func(key.Event) {}
+	}
+	if p.KeyReleased == nil {
+		p.KeyReleased = func(key.Event) {}
 	}
 }
 
