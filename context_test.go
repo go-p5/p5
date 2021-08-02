@@ -43,6 +43,7 @@ func TestPushPop(t *testing.T) {
 			Text("global", 125, 150)
 		},
 		"testdata/push-pop.png",
+		imgDelta,
 	)
 
 	proc.Run(t)
@@ -76,6 +77,7 @@ func TestRotate(t *testing.T) {
 			}
 		},
 		"testdata/rotate.png",
+		imgDelta,
 	)
 
 	proc.Run(t)
@@ -112,6 +114,7 @@ func TestScale(t *testing.T) {
 			Rect(30, 20, 50, 50)
 		},
 		"testdata/scale.png",
+		imgDelta,
 	)
 
 	proc.Run(t)
@@ -139,6 +142,7 @@ func TestTranslate(t *testing.T) {
 			}
 		},
 		"testdata/translate.png",
+		imgDelta,
 	)
 
 	proc.Run(t)
@@ -177,6 +181,7 @@ func TestShear(t *testing.T) {
 			Pop()
 		},
 		"testdata/shear.png",
+		imgDelta,
 	)
 
 	proc.Run(t)
@@ -217,6 +222,7 @@ func TestMatrix(t *testing.T) {
 			}
 		},
 		"testdata/matrix.png",
+		imgDelta,
 	)
 
 	proc.Run(t)

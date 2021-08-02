@@ -23,6 +23,8 @@ import (
 
 var GenerateTestData = flag.Bool("regen", false, "Uses the current state to regenerate the test data.")
 
+const imgDelta = 0.1
+
 type testWindow struct {
 	evts chan event.Event
 	opts []app.Option
@@ -48,15 +50,16 @@ type testProc struct {
 	w, h   int
 	fname  string
 	evts   chan event.Event
+	delta  float64
 }
 
-func newTestGProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname string) *testProc {
-	p := newTestProc(t, w, h, setup, draw, fname)
+func newTestGProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname string, delta float64) *testProc {
+	p := newTestProc(t, w, h, setup, draw, fname, delta)
 	p.global = true
 	return p
 }
 
-func newTestProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname string) *testProc {
+func newTestProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname string, delta float64) *testProc {
 	t.Helper()
 
 	evts := make(chan event.Event)
@@ -76,6 +79,7 @@ func newTestProc(t *testing.T, w, h int, setup, draw func(p *Proc), fname string
 		h:     h,
 		fname: fname,
 		evts:  evts,
+		delta: delta,
 	}
 }
 
@@ -174,7 +178,7 @@ func (p *testProc) screenshot(t *testing.T) {
 		return
 	}
 
-	ok, err := cmpimg.EqualApprox(ext[1:], got, want, 0.1)
+	ok, err := cmpimg.EqualApprox(ext[1:], got, want, p.delta)
 	if err != nil {
 		t.Errorf("%s: could not compare images: %+v", p.fname, err)
 		return
@@ -207,6 +211,7 @@ func TestText(t *testing.T) {
 			proc.Text("Hello, World!", 25, 100)
 		},
 		"testdata/text.png",
+		imgDelta,
 	)
 
 	proc.Run(t)
@@ -244,6 +249,7 @@ func TestHelloWorld(t *testing.T) {
 			p5.Arc(300, 100, 80, 20, 0, 1.5*math.Pi)
 		},
 		"testdata/hello.png",
+		imgDelta,
 	)
 	proc.Run(t)
 }
@@ -257,6 +263,7 @@ func TestShutdown(t *testing.T) {
 		func(*Proc) {},
 		func(*Proc) {},
 		"",
+		imgDelta,
 	)
 	proc.Run(t,
 		proc.frame(t, nil), proc.frame(t, nil),
@@ -276,6 +283,7 @@ func TestFrameCount(t *testing.T) {
 		func(*Proc) {},
 		func(*Proc) {},
 		"",
+		imgDelta,
 	)
 
 	if fc := proc.FrameCount(); fc != 0 {
@@ -302,6 +310,7 @@ func TestFrameCount_NoLoop(t *testing.T) {
 		func(*Proc) {},
 		func(*Proc) {},
 		"",
+		imgDelta,
 	)
 
 	proc.NoLoop()
@@ -329,6 +338,7 @@ func TestFrameCount_Loop(t *testing.T) {
 		func(*Proc) {},
 		func(*Proc) {},
 		"",
+		imgDelta,
 	)
 
 	// By default looping should be enabled

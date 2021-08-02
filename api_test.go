@@ -73,6 +73,7 @@ func TestPhysCanvas(t *testing.T) {
 
 		},
 		"testdata/canvas.png",
+		imgDelta,
 	)
 	proc.Run(t)
 }
@@ -123,6 +124,7 @@ func TestAPIShapes(t *testing.T) {
 			Line(300, 0, 300, 400)
 		},
 		"testdata/api_shapes.png",
+		imgDelta,
 	)
 	gproc = proc.Proc
 	proc.Run(t)
@@ -153,6 +155,7 @@ func TestBezier(t *testing.T) {
 			Bezier(100, 100, 230, 80, 100, 30, 300, 200)
 		},
 		"testdata/api_shapes_bezier.png",
+		imgDelta,
 	)
 	gproc = proc.Proc
 	proc.Run(t)
@@ -240,6 +243,7 @@ func TestCurve(t *testing.T) {
 			}
 		},
 		"testdata/api_shapes_curve.png",
+		imgDelta,
 	)
 	proc.Run(t)
 }
@@ -385,6 +389,7 @@ func TestDrawImage(t *testing.T) {
 			}
 		},
 		"testdata/gopher-image.png",
+		imgDelta,
 	)
 	proc.Run(t)
 }

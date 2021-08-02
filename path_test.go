@@ -33,6 +33,7 @@ func TestPathVertex(t *testing.T) {
 			p.End()
 		},
 		"testdata/path.png",
+		imgDelta,
 	)
 	proc.Run(t)
 }
@@ -56,6 +57,7 @@ func TestPathQuad(t *testing.T) {
 			p.End()
 		},
 		"testdata/path_quad.png",
+		imgDelta,
 	)
 	proc.Run(t)
 }
@@ -79,6 +81,7 @@ func TestPathCube(t *testing.T) {
 			p.End()
 		},
 		"testdata/path_cube.png",
+		imgDelta,
 	)
 	proc.Run(t)
 }
@@ -97,6 +100,7 @@ func TestDraw_Framecount(t *testing.T) {
 			proc.Text(fmt.Sprintf("%d", proc.FrameCount()), 50, 50)
 		},
 		"testdata/framecount.png",
+		imgDelta,
 	)
 	proc.Run(t)
 }
