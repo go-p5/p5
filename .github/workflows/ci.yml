@@ -14,6 +14,7 @@ env:
   COVERAGE: "-coverpkg=github.com/go-p5/p5/..."
   DISPLAY:  ":99.0"
   EGL_PLATFORM: "x11"
+  CI: "1"
 
 jobs:
 
