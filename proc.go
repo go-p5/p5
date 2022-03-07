@@ -56,6 +56,8 @@ var (
 
 	defaultTextColor = color.Black
 	defaultTextSize  = float32(12)
+
+	defaultTextFont text.Font
 )
 
 // gioWindow represents an operating system window operated by Gio.
@@ -130,15 +132,15 @@ func newProc(w, h int) *Proc {
 	proc.ctl.FrameRate = defaultFrameRate
 	proc.ctl.loop = true
 	proc.stk = newStackOps(proc.ctx.Ops)
-	proc.initCanvas(w, h)
 
 	proc.cfg.th = material.NewTheme(gofont.Collection())
+	proc.initCanvas(w, h, defaultTextFont)
 	proc.stk.cur().stroke.style.Width = 2
 
 	return proc
 }
 
-func (p *Proc) initCanvas(w, h int) {
+func (p *Proc) initCanvas(w, h int, fnt text.Font) {
 	p.initCanvasDim(w, h, 0, float64(w), 0, float64(h))
 	p.stk.cur().bkg = defaultBkgColor
 	p.stk.cur().fill = defaultFillColor
@@ -147,6 +149,7 @@ func (p *Proc) initCanvas(w, h int) {
 	p.stk.cur().text.color = defaultTextColor
 	p.stk.cur().text.align = text.Start
 	p.stk.cur().text.size = defaultTextSize
+	p.stk.cur().text.font = fnt
 }
 
 func (p *Proc) initCanvasDim(w, h int, xmin, xmax, ymin, ymax float64) {
@@ -349,9 +352,18 @@ func (p *Proc) Fill(c color.Color) {
 	p.stk.cur().fill = c
 }
 
+// LoadFonts sets the fonts collection to use for text.
+func (p *Proc) LoadFonts(fnt []text.FontFace) {
+	p.cfg.th = material.NewTheme(fnt)
+}
+
 // TextSize sets the text size.
 func (p *Proc) TextSize(size float64) {
 	p.stk.cur().text.size = float32(size)
+}
+
+func (p *Proc) TextFont(fnt text.Font) {
+	p.stk.cur().text.font = fnt
 }
 
 // Text draws txt on the screen at (x,y).
@@ -379,6 +391,7 @@ func (p *Proc) Text(txt string, x, y float64) {
 	l := material.Label(p.cfg.th, unit.Px(size), txt)
 	l.Color = rgba(p.stk.cur().text.color)
 	l.Alignment = p.stk.cur().text.align
+	l.Font = p.stk.cur().text.font
 	l.Layout(p.ctx)
 }
 

@@ -47,6 +47,7 @@ type textStyle struct {
 	color color.Color
 	align text.Alignment
 	size  float32
+	font  text.Font
 }
 
 func (stk *stackOps) cur() *context {

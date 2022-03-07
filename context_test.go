@@ -5,9 +5,15 @@
 package p5
 
 import (
+	"fmt"
 	"image/color"
 	"math"
 	"testing"
+
+	"gioui.org/font/gofont"
+	"gioui.org/font/opentype"
+	"gioui.org/text"
+	"github.com/go-fonts/latin-modern/lmroman12regular"
 )
 
 func TestPushPop(t *testing.T) {
@@ -16,30 +22,55 @@ func TestPushPop(t *testing.T) {
 		h = 200
 	)
 
+	fonts := gofont.Collection()
+
+	face, err := opentype.Parse(lmroman12regular.TTF)
+	if err != nil {
+		panic(fmt.Errorf("failed to parse font: %+v", err))
+	}
+	fonts = append(fonts, text.FontFace{
+		Font: text.Font{
+			Typeface: "Latin-Modern",
+		},
+		Face: face,
+	})
+
 	proc := newTestGProc(t, w, h,
 		func(proc *Proc) {
+			LoadFonts(fonts)
 			Background(color.Gray{Y: 220})
 			Fill(color.RGBA{R: 255, A: 255})
 		},
 		func(proc *Proc) {
 			Stroke(color.RGBA{B: 255, A: 255})
 
-			Push()
-			Fill(color.RGBA{G: 255, A: 255})
+			TextSize(15)
 			{
 				Push()
-				Background(color.Black)
-				Fill(color.RGBA{R: 255, A: 255})
+				Fill(color.RGBA{G: 255, A: 255})
+				{
+					Push()
+					Background(color.Black)
+					Fill(color.RGBA{R: 255, A: 255})
+					Pop()
+				}
+				TextFont(text.Font{Typeface: "Latin-Modern"})
+				TextSize(20)
+				Stroke(color.RGBA{R: 255, A: 255})
+				Rect(20, 20, 160, 160)
+				Text("sub-context", 25, 100)
+				{
+					Push()
+					TextSize(10)
+					Rect(25, 40, 80, 20)
+					Text("sub-sub-context", 30, 50)
+					Pop()
+
+				}
 				Pop()
 			}
-			TextSize(10)
-			Stroke(color.RGBA{R: 255, A: 255})
-			Rect(20, 20, 160, 160)
-			Text("sub-context", 25, 100)
-			Pop()
 
 			Rect(120, 120, 70, 70)
-			TextSize(15)
 			Text("global", 125, 150)
 		},
 		"testdata/push-pop.png",
