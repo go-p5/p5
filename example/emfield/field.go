@@ -168,7 +168,7 @@ func (em *EMField) updatePath(i int) {
 
 		switch {
 		case fmag > 10e-5:
-			vec = vec.Scale(10e-5 / r2.Norm(vec))
+			vec = r2.Scale(10e-5/r2.Norm(vec), vec)
 		case em.stop && !path.usr && math.Hypot(vec.X-p.p.X, vec.Y-p.p.Y) < p.r:
 			//em.paths = append(em.paths[:i], em.paths[i+1:]...)
 			return
@@ -176,7 +176,7 @@ func (em *EMField) updatePath(i int) {
 	}
 
 	path.pts = append(path.pts, point{
-		p: vec.Scale(float64(em.step)).Add(last.p),
+		p: r2.Add(r2.Scale(float64(em.step), vec), last.p),
 		c: em.color(mag),
 	})
 }
@@ -185,10 +185,10 @@ func (em *EMField) emfield(p r2.Vec, q float64) (vec r2.Vec, mag float64) {
 	// See:
 	//  https://en.wikipedia.org/wiki/Electrostatics#Electric_field
 	for _, pp := range em.ps {
-		v := p.Sub(pp.p)
+		v := r2.Sub(p, pp.p)
 		m := r2.Norm(v)
 		f := 1 / (m * m * m) * emK * q * pp.q * eCharge
-		vec = vec.Add(v.Scale(f))
+		vec = r2.Add(vec, r2.Scale(f, v))
 		mag += f * 10e-5
 	}
 	mag *= q
