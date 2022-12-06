@@ -28,12 +28,12 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go-version }}
  
     - name: Cache-Go
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -41,7 +41,7 @@ jobs:
           ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
  
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Linux packages
       if: matrix.platform == 'ubuntu-latest'
@@ -64,7 +64,12 @@ jobs:
       if: matrix.platform == 'windows-latest'
       run: |
         go test -v ./...
-
+    - name: static-check
+      uses: dominikh/staticcheck-action@v1.2.0
+      with:
+        install-go: false
+        cache-key: ${{ matrix.platform }}
+        version: "2022.1"
     - name: Upload-Coverage
       if: matrix.platform == 'ubuntu-latest'
       uses: codecov/codecov-action@v1
