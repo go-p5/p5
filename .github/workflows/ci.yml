@@ -28,12 +28,13 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go-version }}
+        cache: true
  
     - name: Cache-Go
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -41,7 +42,9 @@ jobs:
           ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
  
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 1
 
     - name: Install Linux packages
       if: matrix.platform == 'ubuntu-20.04'
@@ -67,4 +70,4 @@ jobs:
 
     - name: Upload-Coverage
       if: matrix.platform == 'ubuntu-20.04'
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
