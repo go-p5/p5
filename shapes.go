@@ -9,7 +9,6 @@ import (
 
 	"gioui.org/f32"
 	"gioui.org/op"
-	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 )
 
@@ -32,50 +31,48 @@ func (p *Proc) Ellipse(x, y, w, h float64) {
 	switch {
 	case math.Abs(w) > math.Abs(h):
 		ec = math.Sqrt(w*w - h*h)
-		f1 = p.pt(x+ec, y).Sub(p1)
-		f2 = p.pt(x-ec, y).Sub(p1)
+		f1 = p.pt(x+ec, y)
+		f2 = p.pt(x-ec, y)
 	default:
 		ec = math.Sqrt(h*h - w*w)
-		f1 = p.pt(x, y+ec).Sub(p1)
-		f2 = p.pt(x, y-ec).Sub(p1)
+		f1 = p.pt(x, y+ec)
+		f2 = p.pt(x, y-ec)
 	}
 
-	path := func(o *op.Ops, close bool) clip.PathSpec {
-		var path clip.Path
-		path.Begin(o)
-		path.Move(p1)
-		path.Arc(f1, f2, 2*math.Pi)
+	path := func(o *op.Ops, close bool) segments {
+		segs := make(segments, 0, 3)
+		segs = append(segs,
+			opMoveTo(p1),
+			opArcTo(f1, f2, 2*math.Pi),
+		)
 		if close {
-			path.Close()
+			segs = append(segs, segment{
+				op: segOpClose,
+			})
 		}
-		return path.End()
+		return segs
 	}
 
 	if fill := p.stk.cur().fill; fill != nil {
-		state := op.Save(p.ctx.Ops)
+		stack := op.TransformOp{}.Push(p.ctx.Ops)
 		close := true
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(fill),
-			clip.Outline{
-				Path: path(p.ctx.Ops, close),
-			}.Op(),
+			path(p.ctx.Ops, close).outline(p.ctx.Ops),
 		)
-		state.Load()
+		stack.Pop()
 	}
 
 	if stroke := p.stk.cur().stroke.color; stroke != nil {
-		state := op.Save(p.ctx.Ops)
+		stack := op.TransformOp{}.Push(p.ctx.Ops)
 		close := false
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(stroke),
-			clip.Stroke{
-				Path:  path(p.ctx.Ops, close),
-				Style: p.stk.cur().stroke.style,
-			}.Op(),
+			path(p.ctx.Ops, close).stroke(p.ctx.Ops, p.stk.cur().stroke),
 		)
-		state.Load()
+		stack.Pop()
 	}
 }
 
@@ -114,20 +111,17 @@ func (p *Proc) Arc(x, y, w, h float64, beg, end float64) {
 	var (
 		sin, cos = math.Sincos(beg)
 		p0       = p.pt(a*cos, b*sin).Add(c)
-		path     clip.Path
+		path     = segments{
+			opMoveTo(p0),
+			opArcTo(f1, f2, float32(end-beg)),
+		}
 	)
-	defer op.Save(p.ctx.Ops).Load()
-	path.Begin(p.ctx.Ops)
-	path.Move(p0)
-	path.Arc(f1.Sub(p0), f2.Sub(p0), float32(end-beg))
+	defer op.TransformOp{}.Push(p.ctx.Ops).Pop()
 
 	paint.FillShape(
 		p.ctx.Ops,
 		rgba(p.stk.cur().stroke.color),
-		clip.Stroke{
-			Path:  path.End(),
-			Style: p.stk.cur().stroke.style,
-		}.Op(),
+		path.stroke(p.ctx.Ops, p.stk.cur().stroke),
 	)
 }
 
@@ -140,20 +134,17 @@ func (p *Proc) Line(x1, y1, x2, y2 float64) {
 	var (
 		p1   = p.pt(x1, y1)
 		p2   = p.pt(x2, y2)
-		path clip.Path
+		path = segments{
+			opMoveTo(p1),
+			opLineTo(p2),
+		}
 	)
-	defer op.Save(p.ctx.Ops).Load()
-	path.Begin(p.ctx.Ops)
-	path.Move(p1)
-	path.Line(p2.Sub(path.Pos()))
+	defer op.TransformOp{}.Push(p.ctx.Ops).Pop()
 
 	paint.FillShape(
 		p.ctx.Ops,
 		rgba(p.stk.cur().stroke.color),
-		clip.Stroke{
-			Path:  path.End(),
-			Style: p.stk.cur().stroke.style,
-		}.Op(),
+		path.stroke(p.ctx.Ops, p.stk.cur().stroke),
 	)
 }
 
@@ -198,25 +189,21 @@ func (p *Proc) Bezier(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 
 	var (
 		sp   = p.pt(x1, y1)
-		cp0  = p.pt(x2, y2).Sub(sp)
-		cp1  = p.pt(x3, y3).Sub(sp)
-		ep   = p.pt(x4, y4).Sub(sp)
-		path clip.Path
+		cp0  = p.pt(x2, y2)
+		cp1  = p.pt(x3, y3)
+		ep   = p.pt(x4, y4)
+		path = segments{
+			opMoveTo(sp),
+			opCubeTo(cp0, cp1, ep),
+		}
 	)
 
-	defer op.Save(p.ctx.Ops).Load()
-
-	path.Begin(p.ctx.Ops)
-	path.Move(sp)
-	path.Cube(cp0, cp1, ep)
+	defer op.TransformOp{}.Push(p.ctx.Ops).Pop()
 
 	paint.FillShape(
 		p.ctx.Ops,
 		rgba(p.stk.cur().stroke.color),
-		clip.Stroke{
-			Path:  path.End(),
-			Style: p.stk.cur().stroke.style,
-		}.Op(),
+		path.stroke(p.ctx.Ops, p.stk.cur().stroke),
 	)
 }
 
@@ -247,32 +234,23 @@ func (p *Proc) Curve(x1, y1, x2, y2, x3, y3, x4, y4 float64) {
 
 		itau = 1 / (6 * (1 - tau))
 
-		p1 = cr2
-		p2 = cr2.Add(cr3.Sub(cr1).Mul(itau))
-		p3 = cr3.Sub(cr4.Sub(cr2).Mul(itau))
-		p4 = cr3
+		beg = cr2
+		cp0 = cr2.Add(cr3.Sub(cr1).Mul(itau))
+		cp1 = cr3.Sub(cr4.Sub(cr2).Mul(itau))
+		end = cr3
 
-		path clip.Path
-
-		sp  = p1
-		cp0 = p2.Sub(sp)
-		cp1 = p3.Sub(sp)
-		ep  = p4.Sub(sp)
+		path = segments{
+			opMoveTo(beg),
+			opCubeTo(cp0, cp1, end),
+		}
 	)
 
-	defer op.Save(p.ctx.Ops).Load()
-
-	path.Begin(p.ctx.Ops)
-	path.Move(sp)
-	path.Cube(cp0, cp1, ep)
+	defer op.TransformOp{}.Push(p.ctx.Ops).Pop()
 
 	paint.FillShape(
 		p.ctx.Ops,
 		rgba(p.stk.cur().stroke.color),
-		clip.Stroke{
-			Path:  path.End(),
-			Style: p.stk.cur().stroke.style,
-		}.Op(),
+		path.stroke(p.ctx.Ops, p.stk.cur().stroke),
 	)
 }
 
@@ -289,38 +267,32 @@ func (p *Proc) poly(ps ...f32.Point) {
 		return
 	}
 
-	path := func(o *op.Ops) clip.PathSpec {
-		var path clip.Path
-		path.Begin(o)
-		path.Move(ps[0])
-		for _, p := range ps[1:] {
-			path.Line(p.Sub(path.Pos()))
+	path := make(segments, len(ps))
+	for i, p := range ps {
+		op := opLineTo
+		if i == 0 {
+			op = opMoveTo
 		}
-		return path.End()
+		path[i] = op(p)
 	}
 
 	if p.doFill() {
-		state := op.Save(p.ctx.Ops)
+		stack := op.TransformOp{}.Push(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(p.stk.cur().fill),
-			clip.Outline{
-				Path: path(p.ctx.Ops),
-			}.Op(),
+			path.outline(p.ctx.Ops),
 		)
-		state.Load()
+		stack.Pop()
 	}
 
 	if p.doStroke() {
-		state := op.Save(p.ctx.Ops)
+		stack := op.TransformOp{}.Push(p.ctx.Ops)
 		paint.FillShape(
 			p.ctx.Ops,
 			rgba(p.stk.cur().stroke.color),
-			clip.Stroke{
-				Path:  path(p.ctx.Ops),
-				Style: p.stk.cur().stroke.style,
-			}.Op(),
+			path.stroke(p.ctx.Ops, p.stk.cur().stroke),
 		)
-		state.Load()
+		stack.Pop()
 	}
 }

@@ -22,6 +22,7 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/f32"
+	"gioui.org/font"
 	"gioui.org/font/gofont"
 	"gioui.org/gpu/headless"
 	"gioui.org/io/event"
@@ -57,15 +58,11 @@ var (
 	defaultTextColor = color.Black
 	defaultTextSize  = float32(12)
 
-	defaultTextFont text.Font
+	defaultTextFont font.Font
 )
 
 // gioWindow represents an operating system window operated by Gio.
 type gioWindow interface {
-	// Close the window. The window's event loop should exit when it receives
-	// system.DestroyEvent.
-	Close()
-
 	// Events returns the channel where events are delivered.
 	Events() <-chan event.Event
 
@@ -135,12 +132,12 @@ func newProc(w, h int) *Proc {
 
 	proc.cfg.th = material.NewTheme(gofont.Collection())
 	proc.initCanvas(w, h, defaultTextFont)
-	proc.stk.cur().stroke.style.Width = 2
+	proc.stk.cur().stroke.style.width = 2
 
 	return proc
 }
 
-func (p *Proc) initCanvas(w, h int, fnt text.Font) {
+func (p *Proc) initCanvas(w, h int, fnt font.Font) {
 	p.initCanvasDim(w, h, 0, float64(w), 0, float64(h))
 	p.stk.cur().bkg = defaultBkgColor
 	p.stk.cur().fill = defaultFillColor
@@ -212,8 +209,8 @@ func (p *Proc) run() error {
 	)
 
 	w := p.newWindow(app.Title("p5"), app.Size(
-		unit.Px(float32(width)),
-		unit.Px(float32(height)),
+		unit.Dp(float32(width)),
+		unit.Dp(float32(height)),
 	))
 	p.head, err = headless.NewWindow(width, height)
 	if err != nil {
@@ -243,7 +240,7 @@ func (p *Proc) run() error {
 		case key.Event:
 			switch e.Name {
 			case key.NameEscape:
-				w.Close()
+				return nil
 			case "F11":
 				fname := fmt.Sprintf("out-%03d.png", cnt)
 				err = p.Screenshot(fname)
@@ -330,7 +327,7 @@ func (p *Proc) Background(c color.Color) {
 
 func (p *Proc) doStroke() bool {
 	return p.stk.cur().stroke.color != nil &&
-		p.stk.cur().stroke.style.Width > 0
+		p.stk.cur().stroke.style.width > 0
 }
 
 // Stroke sets the color of the strokes.
@@ -340,7 +337,7 @@ func (p *Proc) Stroke(c color.Color) {
 
 // StrokeWidth sets the size of the strokes.
 func (p *Proc) StrokeWidth(v float64) {
-	p.stk.cur().stroke.style.Width = float32(v)
+	p.stk.cur().stroke.style.width = float32(v)
 }
 
 func (p *Proc) doFill() bool {
@@ -353,7 +350,7 @@ func (p *Proc) Fill(c color.Color) {
 }
 
 // LoadFonts sets the fonts collection to use for text.
-func (p *Proc) LoadFonts(fnt []text.FontFace) {
+func (p *Proc) LoadFonts(fnt []font.FontFace) {
 	p.cfg.th = material.NewTheme(fnt)
 }
 
@@ -362,7 +359,7 @@ func (p *Proc) TextSize(size float64) {
 	p.stk.cur().text.size = float32(size)
 }
 
-func (p *Proc) TextFont(fnt text.Font) {
+func (p *Proc) TextFont(fnt font.Font) {
 	p.stk.cur().text.font = fnt
 }
 
@@ -382,13 +379,13 @@ func (p *Proc) Text(txt string, x, y float64) {
 	case text.Middle:
 		offset = x - 0.5*w
 	}
-	defer op.Save(p.ctx.Ops).Load()
-	op.Offset(f32.Point{
+	defer op.TransformOp{}.Push(p.ctx.Ops).Pop()
+	op.Affine(f32.Affine2D{}.Offset(f32.Point{
 		X: float32(offset),
 		Y: float32(y) - size,
-	}).Add(p.ctx.Ops) // shift to use baseline
+	})).Add(p.ctx.Ops) // shift to use baseline
 
-	l := material.Label(p.cfg.th, unit.Px(size), txt)
+	l := material.Label(p.cfg.th, unit.Sp(size), txt)
 	l.Color = rgba(p.stk.cur().text.color)
 	l.Alignment = p.stk.cur().text.align
 	l.Font = p.stk.cur().text.font
@@ -403,7 +400,8 @@ func (p *Proc) Screenshot(fname string) error {
 		return fmt.Errorf("p5: could not run headless frame: %w", err)
 	}
 
-	img, err := p.head.Screenshot()
+	img := image.NewRGBA(image.Rect(0, 0, p.cfg.w, p.cfg.h))
+	err = p.head.Screenshot(img)
 	if err != nil {
 		return fmt.Errorf("p5: could not take screenshot: %w", err)
 	}
@@ -525,8 +523,8 @@ func (p *Proc) ReadImage(fname string) (img image.Image, err error) {
 
 // DrawImage draws the provided image at (x,y).
 func (p *Proc) DrawImage(img image.Image, x, y float64) {
-	p.stk.save()
-	defer p.stk.load()
+	p.stk.push()
+	defer p.stk.pop()
 
 	p.stk.translate(x, y)
 	paint.NewImageOp(img).Add(p.stk.ops)

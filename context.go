@@ -8,9 +8,10 @@ import (
 	"image/color"
 
 	"gioui.org/f32"
+	"gioui.org/font"
 	"gioui.org/op"
-	"gioui.org/op/clip"
 	"gioui.org/text"
+	"gioui.org/x/stroke"
 )
 
 // stackOps holds a stack of Gio operations and state.
@@ -35,61 +36,64 @@ type context struct {
 
 	tau float32 // Catmull-Rom tension, used for Curve.
 
-	state op.StateOp
+	state op.TransformStack
 }
 
 type strokeStyle struct {
 	color color.Color
-	style clip.StrokeStyle
+	style struct {
+		cap    stroke.StrokeCap
+		join   stroke.StrokeJoin
+		dashes stroke.Dashes
+		width  float32
+	}
 }
 
 type textStyle struct {
 	color color.Color
 	align text.Alignment
 	size  float32
-	font  text.Font
+	font  font.Font
 }
 
 func (stk *stackOps) cur() *context {
 	return &stk.ctx[len(stk.ctx)-1]
 }
 
-func (stk *stackOps) save() {
+func (stk *stackOps) push() {
 	stk.ctx = append(stk.ctx, *stk.cur())
-	stk.cur().state = op.Save(stk.ops)
+	stk.cur().state = op.TransformOp{}.Push(stk.ops)
 }
 
-func (stk *stackOps) load() {
-	stk.cur().state.Load()
+func (stk *stackOps) pop() {
+	stk.cur().state.Pop()
 	stk.ctx = stk.ctx[:len(stk.ctx)-1]
 }
 
 func (stk *stackOps) rotate(angle float64) {
-	ops := stk.ops
-	aff := f32.Affine2D{}.Rotate(f32.Pt(0, 0), float32(-angle))
-	op.Affine(aff).Add(ops)
+	op.Affine(f32.Affine2D{}.Rotate(
+		f32.Pt(0, 0), float32(-angle),
+	)).Add(stk.ops)
 }
 
 func (stk *stackOps) scale(x, y float64) {
-	ops := stk.ops
-	aff := f32.Affine2D{}.Scale(
+	op.Affine(f32.Affine2D{}.Scale(
 		f32.Pt(0, 0),
 		f32.Pt(float32(x), float32(y)),
-	)
-	op.Affine(aff).Add(ops)
+	)).Add(stk.ops)
 }
 
 func (stk *stackOps) translate(x, y float64) {
-	op.Offset(f32.Pt(float32(x), float32(y))).Add(stk.ops)
+	op.Affine(f32.Affine2D{}.Offset(
+		f32.Pt(float32(x), float32(y)),
+	)).Add(stk.ops)
 }
 
 func (stk *stackOps) shear(x, y float64) {
-	ops := stk.ops
-	aff := f32.Affine2D{}.Shear(
+	op.Affine(f32.Affine2D{}.Shear(
 		f32.Pt(0, 0),
 		float32(x), float32(y),
-	)
-	op.Affine(aff).Add(ops)
+	)).Add(stk.ops)
 }
 
 func (stk *stackOps) matrix(aff f32.Affine2D) {
@@ -98,12 +102,12 @@ func (stk *stackOps) matrix(aff f32.Affine2D) {
 
 // Push saves the current drawing style settings and transformations.
 func (p *Proc) Push() {
-	p.stk.save()
+	p.stk.push()
 }
 
 // Pop restores the previous drawing style settings and transformations.
 func (p *Proc) Pop() {
-	p.stk.load()
+	p.stk.pop()
 }
 
 // Rotate rotates the graphical context by angle radians.
