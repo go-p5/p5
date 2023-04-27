@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"go/types"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -38,7 +37,7 @@ func main() {
 		log.Fatalf("could not load package %q: %+v", flag.Arg(0), err)
 	}
 
-	tmp, err := ioutil.TempDir("", "p5-run-")
+	tmp, err := os.MkdirTemp("", "p5-run-")
 	if err != nil {
 		log.Fatalf("could not create tmp dir: %+v", err)
 	}
