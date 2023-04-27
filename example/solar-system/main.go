@@ -136,12 +136,14 @@ func NewNBody(name string, mass float64, pos, vel, acc r2.Vec, c color.Color) NB
 
 func (p *NBody) update(dt float64, ps []NBody) {
 	p.updateAcc(dt, ps)
-	p.pos = p.pos.Add(p.vel.Scale(dt)).Add(p.acc.Scale(0.5 * dt * dt))
+	vel := r2.Scale(dt, p.vel)
+	acc := r2.Scale(0.5*dt*dt, p.acc)
+	p.pos = r2.Add(p.pos, r2.Add(vel, acc))
 
-	acc := p.acc
+	acc = p.acc
 
 	p.updateAcc(dt, ps)
-	p.vel = p.vel.Add(acc.Add(p.acc).Scale(0.5 * dt))
+	p.vel = r2.Add(p.vel, r2.Scale(0.5*dt, r2.Add(acc, p.acc)))
 }
 
 func (p *NBody) updateAcc(dt float64, ps []NBody) {
@@ -156,10 +158,10 @@ func (p *NBody) updateAcc(dt float64, ps []NBody) {
 
 		// acceleration for each body.
 		var (
-			delta = p.pos.Sub(q.pos)
+			delta = r2.Sub(p.pos, q.pos)
 			d     = r2.Norm(delta)
 		)
-		p.acc = p.acc.Add(delta).Scale(-G * q.mass / (d * d * d))
+		p.acc = r2.Scale(-G*q.mass/(d*d*d), r2.Add(p.acc, delta))
 	}
 }
 
