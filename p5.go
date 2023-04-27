@@ -9,28 +9,28 @@
 // programming with a graphics aid.
 //
 // p5 is inspired by Processing and its p5js port:
-//  - https://processing.org
-//  - https://p5js.org
+//   - https://processing.org
+//   - https://p5js.org
 //
 // A very simple p5 program could look like:
 //
-//  func main() {
-//      p5.Run(setup, draw)
-//  }
+//	func main() {
+//	    p5.Run(setup, draw)
+//	}
 //
-//  func setup() {
-//      p5.Canvas(200, 200)
-//      p5.Background(color.Black)
-//  }
+//	func setup() {
+//	    p5.Canvas(200, 200)
+//	    p5.Background(color.Black)
+//	}
 //
-//  func draw() {
-//      p5.Fill(color.White)
-//      p5.Square(10, 10, 50, 50)
-//  }
+//	func draw() {
+//	    p5.Fill(color.White)
+//	    p5.Square(10, 10, 50, 50)
+//	}
 //
 // p5 actually provides two set of APIs:
-//  - one closely following the p5js API, with global functions and hidden state,
-//  - another one based on the p5.Proc type that encapsulates state.
+//   - one closely following the p5js API, with global functions and hidden state,
+//   - another one based on the p5.Proc type that encapsulates state.
 package p5 // import "github.com/go-p5/p5"
 
 var (
