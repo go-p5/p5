@@ -12,6 +12,7 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/x/stroke"
+	bstroke "github.com/andybalholm/stroke"
 )
 
 func (p *Proc) BeginPath() *Path {
@@ -214,6 +215,7 @@ func (segs segments) stroke(ops *op.Ops, sty strokeStyle) clip.Op {
 		add = func(seg stroke.Segment) {
 			shape.Path.Segments = append(shape.Path.Segments, seg)
 		}
+		pen f32.Point
 		beg f32.Point
 	)
 
@@ -224,20 +226,42 @@ func (segs segments) stroke(ops *op.Ops, sty strokeStyle) clip.Op {
 		switch seg.op {
 		case segOpMoveTo:
 			add(stroke.MoveTo(seg.args[0]))
+			pen = seg.args[0]
 		case segOpLineTo:
 			add(stroke.LineTo(seg.args[0]))
+			pen = seg.args[0]
 		case segOpArcTo:
-			add(stroke.ArcTo(seg.args[0], seg.args[1], seg.args[2].X))
+			arcs := arcTo(pen, seg.args[0], seg.args[1], seg.args[2].X)
+			shape.Path.Segments = append(shape.Path.Segments, xStroke(arcs)...)
+			pen = f32.Point(arcs[len(arcs)-1].End)
 		case segOpQuadTo:
 			add(stroke.QuadTo(seg.args[0], seg.args[1]))
+			pen = seg.args[1]
 		case segOpCubeTo:
 			add(stroke.CubeTo(seg.args[0], seg.args[1], seg.args[2]))
+			pen = seg.args[2]
 		case segOpClose:
 			add(stroke.LineTo(beg))
+			pen = beg
 		default:
 			panic(fmt.Errorf("p5: unknown stroke-path component %d", seg.op))
 		}
 	}
 
 	return shape.Op(ops)
+}
+
+func arcTo(start, f1, f2 f32.Point, angle float32) []bstroke.Segment {
+	if f1 == f2 {
+		return bstroke.AppendArc(nil, bstroke.Pt(start.X, start.Y), bstroke.Pt(f1.X, f1.Y), angle)
+	}
+	return bstroke.AppendEllipticalArc(nil, bstroke.Pt(start.X, start.Y), bstroke.Pt(f1.X, f1.Y), bstroke.Pt(f2.X, f2.Y), angle)
+}
+
+func xStroke(bs []bstroke.Segment) []stroke.Segment {
+	vs := make([]stroke.Segment, len(bs))
+	for i, b := range bs {
+		vs[i] = stroke.CubeTo(f32.Point(b.CP1), f32.Point(b.CP2), f32.Point(b.End))
+	}
+	return vs
 }

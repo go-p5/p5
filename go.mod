@@ -5,6 +5,7 @@ go 1.19
 require (
 	gioui.org v0.0.0-20230427133431-816bda7ac7bd
 	gioui.org/x v0.0.0-20230426160849-752f112c7a59
+	github.com/andybalholm/stroke v0.0.0-20221221101821-bd29b49d73f0
 	github.com/campoy/embedmd v1.0.0
 	github.com/go-fonts/latin-modern v0.3.0
 	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
@@ -17,7 +18,6 @@ require (
 require (
 	gioui.org/cpu v0.0.0-20210817075930-8d6a761490d2 // indirect
 	gioui.org/shader v1.0.6 // indirect
-	github.com/andybalholm/stroke v0.0.0-20221221101821-bd29b49d73f0 // indirect
 	github.com/go-fonts/liberation v0.3.0 // indirect
 	github.com/go-latex/latex v0.0.0-20230307184459-12ec69307ad9 // indirect
 	github.com/go-pdf/fpdf v0.8.0 // indirect
