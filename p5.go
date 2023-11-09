@@ -25,7 +25,7 @@
 //
 //	func draw() {
 //	    p5.Fill(color.White)
-//	    p5.Square(10, 10, 50, 50)
+//	    p5.Square(10, 10, 50)
 //	}
 //
 // p5 actually provides two set of APIs:
