@@ -10,9 +10,9 @@ import (
 	"math"
 	"testing"
 
+	"gioui.org/font"
 	"gioui.org/font/gofont"
 	"gioui.org/font/opentype"
-	"gioui.org/text"
 	"github.com/go-fonts/latin-modern/lmroman12regular"
 )
 
@@ -28,8 +28,8 @@ func TestPushPop(t *testing.T) {
 	if err != nil {
 		panic(fmt.Errorf("failed to parse font: %+v", err))
 	}
-	fonts = append(fonts, text.FontFace{
-		Font: text.Font{
+	fonts = append(fonts, font.FontFace{
+		Font: font.Font{
 			Typeface: "Latin-Modern",
 		},
 		Face: face,
@@ -54,7 +54,7 @@ func TestPushPop(t *testing.T) {
 					Fill(color.RGBA{R: 255, A: 255})
 					Pop()
 				}
-				TextFont(text.Font{Typeface: "Latin-Modern"})
+				TextFont(font.Font{Typeface: "Latin-Modern"})
 				TextSize(20)
 				Stroke(color.RGBA{R: 255, A: 255})
 				Rect(20, 20, 160, 160)

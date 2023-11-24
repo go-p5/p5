@@ -9,7 +9,7 @@ import (
 	"image/color"
 	"log"
 
-	"gioui.org/text"
+	"gioui.org/font"
 )
 
 // Push saves the current drawing style settings and transformations.
@@ -55,7 +55,7 @@ func Fill(c color.Color) {
 }
 
 // LoadFonts sets the fonts collection to use for text.
-func LoadFonts(fnt []text.FontFace) {
+func LoadFonts(fnt []font.FontFace) {
 	gproc.LoadFonts(fnt)
 }
 
@@ -65,7 +65,7 @@ func TextSize(size float64) {
 }
 
 // TextFont sets the text font.
-func TextFont(fnt text.Font) {
+func TextFont(fnt font.Font) {
 	gproc.TextFont(fnt)
 }
 

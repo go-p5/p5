@@ -9,9 +9,9 @@ import (
 	"image/color"
 	"math"
 
+	"gioui.org/font"
 	"gioui.org/font/gofont"
 	"gioui.org/font/opentype"
-	"gioui.org/text"
 	"github.com/go-fonts/latin-modern/lmroman12regular"
 	"github.com/go-p5/p5"
 )
@@ -48,11 +48,11 @@ func draw() {
 	p5.TextSize(24)
 	p5.Text("Hello, World!", 10, 250)
 
-	p5.TextFont(text.Font{Typeface: "Latin-Modern"})
+	p5.TextFont(font.Font{Typeface: "Latin-Modern"})
 	p5.TextSize(24)
 	p5.Text("Hello, World!", 10, 300)
 
-	p5.TextFont(text.Font{})
+	p5.TextFont(font.Font{})
 	p5.TextSize(24)
 	p5.Text("Hello, World!", 10, 350)
 
@@ -66,8 +66,8 @@ func loadFonts() {
 	if err != nil {
 		panic(fmt.Errorf("failed to parse font: %+v", err))
 	}
-	fonts = append(fonts, text.FontFace{
-		Font: text.Font{
+	fonts = append(fonts, font.FontFace{
+		Font: font.Font{
 			Typeface: "Latin-Modern",
 		},
 		Face: face,
