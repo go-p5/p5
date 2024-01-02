@@ -356,3 +356,27 @@ func TestFrameCount_Loop(t *testing.T) {
 		t.Fatalf("should be looping")
 	}
 }
+
+func TestIssue63(t *testing.T) {
+	const (
+		w = 500
+		h = 500
+	)
+	proc := newTestProc(t, w, h,
+		func(p5 *Proc) {
+			p5.Canvas(w, h)
+			p5.Background(color.Gray{Y: 220})
+		},
+		func(p5 *Proc) {
+			p5.StrokeWidth(2)
+			p5.Fill(color.RGBA{R: 255, A: 208})
+			p5.Rect(382.732615, 14.503678, 52, 73)
+
+			p5.Fill(color.RGBA{B: 255, A: 208})
+			p5.Rect(200, 200, 50, 100)
+		},
+		"testdata/issue-063.png",
+		imgDelta,
+	)
+	proc.Run(t)
+}

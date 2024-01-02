@@ -289,12 +289,21 @@ func (p *Proc) poly(ps ...f32.Point) {
 		return
 	}
 
+	doClose := false
+	if len(ps) > 1 && ps[0] == ps[len(ps)-1] {
+		doClose = true
+		ps = ps[:len(ps)-1]
+	}
+
 	path := func(o *op.Ops) clip.PathSpec {
 		var path clip.Path
 		path.Begin(o)
 		path.Move(ps[0])
 		for _, p := range ps[1:] {
 			path.Line(p.Sub(path.Pos()))
+		}
+		if doClose {
+			path.Close()
 		}
 		return path.End()
 	}
