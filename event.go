@@ -4,6 +4,8 @@
 
 package p5
 
+import "gioui.org/io/key"
+
 // Event is the current event pushed from the system.
 var Event struct {
 	Mouse struct {
@@ -17,6 +19,11 @@ var Event struct {
 			Y float64
 		}
 		Buttons Buttons
+	}
+
+	Key struct {
+		Cur  key.Event
+		Prev key.Event
 	}
 }
 

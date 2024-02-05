@@ -40,11 +40,35 @@ var (
 
 // Run executes the user functions setup and draw.
 // Run never exits.
-func Run(setup, draw Func) {
+func Run(setup, draw Func, opts ...Option) {
 	gproc.Setup = setup
 	gproc.Draw = draw
+
+	for _, opt := range opts {
+		opt(gproc)
+	}
+
 	gproc.Run()
 }
 
 // Func is the type of functions users provide to p5.
 type Func func()
+
+// Option customizes further a p5 processor.
+type Option func(p *Proc)
+
+// WithKeyCallback binds the given function to the p5 processor's
+// key callback.
+func WithKeyCallback(f Func) Option {
+	return func(p *Proc) {
+		p.Key = f
+	}
+}
+
+// WithMouseCallback binds the given function to the p5 processor's
+// mouse callback.
+func WithMouseCallback(f Func) Option {
+	return func(p *Proc) {
+		p.Mouse = f
+	}
+}
